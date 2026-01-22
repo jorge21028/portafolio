@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planificación Docente - DASI</title>
+	<link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: #1e3c72;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .momentos {
+            display: grid;
+            gap: 20px;
+        }
+
+        .momento-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .momento-card h3 {
+            color: #1e3c72;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .subsection {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .subsection label {
+            color: #667eea;
+            font-size: 13px;
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .logo-preview {
+            margin-top: 10px;
+            max-width: 150px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .logo-preview img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 768px) {
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+     <header class="navbar">
+    <div class="navbar-content">
+        <div class="logo"><a href="index.html">J. L. Abreu | Portafolio Docente</a></div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li class="dropdown">
+                    <a href="#">Módulos</a>
+                    <ul class="submenu">
+                        <li><a href="DDBD.html">DDBD</a></li>
+                        <li><a href="DPWRM.html">DPWRM</a></li>
+                        <li><a href="TecDig.html">Tec.Dig</a></li>
+                        <li><a href="DASI.html">DASI</a></li>
+                        <li><a href="IMASI.html">IMASI</a></li>
+                        <li><a href="Talleres.html">Talleres</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#">Herramientas</a>
+                    <ul class="submenu">
+                        <li><a href="Horario.html">Horario</a></li>
+                        <li><a href="gestion_actividad.html">Actividades</a></li>
+                        <li><a href="ruleta.html">Ruleta</a></li>
+						<li><a href="Preguntas.html">Ruleta de Preguntas</a></li>
+						<li><a href="Planificacion-Diaria.html">Planificación Diaria</a></li>						
+                    </ul>
+                </li>
+                <li><a href="cv_soporte.html">CV/Soporte</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Planificación Docente</h1>
+            <p>Sistema de Generación de Planificaciones - Jorge Luis Abreu Rodríguez</p>
+        </div>
+
+        <div class="content">
+            <form id="planForm">
+                <!-- Logo -->
+                <div class="section">
+                    <div class="section-title">🖼️ Logo de la Institución</div>
+                    <div class="form-group">
+                        <label>Subir logo personalizado (opcional)</label>
+                        <input type="file" id="logoUpload" accept="image/*">
+                        <div class="logo-preview" id="logoPreview">
+                            <img id="logoImg" src="https://res.cloudinary.com/duuonteo7/image/upload/v1764426096/Logo_CENSA_g7vn26.png" alt="Logo">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información General -->
+                <div class="section">
+                    <div class="section-title">📌 Información General</div>
+                    
+                    <div class="form-group">
+                        <label>Centro Educativo</label>
+                        <input type="text" id="centroEducativo" value="Nuestra Señora De la Altagracia" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nombre del Profesor</label>
+                        <input type="text" id="tecnicoProfesional" value="Ing. Jorge Luis Abreu Rodriguez, M.A." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Bachillerato/Nivel</label>
+                        <select id="nombreTecnico" required>
+                            <option value="Desarrollo y Administración de Aplicaciones Informáticas">Desarrollo y Administración de Aplicaciones Informáticas</option>
+                            <option value="Cuidado de la Salud">Cuidado de la Salud</option>
+                            <option value="Primer Ciclo">Primer Ciclo</option>
+                        </select>
+                    </div>
+
+                    <div class="two-columns">
+                        <div class="form-group">
+                            <label>Grado y Sección</label>
+                            <select id="gradoSeccion" required onchange="updateModulos()">
+                                <option value="">Seleccionar...</option>
+                                <option value="3ro A">3ro A</option>
+                                <option value="3ro B">3ro B</option>
+                                <option value="3ro C">3ro C</option>
+                                <option value="4to A">4to A</option>
+                                <option value="4to B">4to B</option>
+                                <option value="4to C">4to C</option>
+                                <option value="5to A">5to A</option>
+                                <option value="5to B">5to B</option>
+                                <option value="5to C">5to C</option>
+                                <option value="6to A">6to A</option>
+                                <option value="6to B">6to B</option>
+                                <option value="6to C">6to C</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Módulo Formativo</label>
+                            <select id="moduloFormativo" required onchange="updateRA()">
+                                <option value="">Primero seleccione un grado</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actividad -->
+                <div class="section">
+                    <div class="section-title">📝 Detalles de la Actividad</div>
+                    
+                    <div class="form-group">
+                        <label>Nombre de la Actividad</label>
+                        <input type="text" id="nombreActividad" required>
+                    </div>
+
+                    <div class="two-columns">
+                        <div class="form-group">
+                            <label>Resultado de Aprendizaje (RA)</label>
+                            <select id="resultadoAprendizaje" required>
+                                <option value="">Primero seleccione un módulo</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Valor de la Actividad</label>
+                            <input type="text" id="valorActividad" value="2 puntos" required>
+                        </div>
+                    </div>
+
+                    <div class="two-columns">
+                        <div class="form-group">
+                            <label>Tipo de Actividad</label>
+                            <select id="tipoActividad" required>
+                                <option value="Individual">Individual</option>
+                                <option value="Grupal">Grupal</option>
+                                <option value="Colaborativa">Colaborativa</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Duración de la Clase</label>
+                            <input type="text" id="tiempoEstimado" value="1h/Clase" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Instrumento de Evaluación</label>
+                        <select id="instrumentoEvaluacion" required>
+                            <option value="Escala de valoración">Escala de valoración</option>
+                            <option value="Rúbrica">Rúbrica</option>
+                            <option value="Lista de cotejo">Lista de cotejo</option>
+                            <option value="Registro anecdótico">Registro anecdótico</option>
+                            <option value="Portafolio">Portafolio</option>
+                            <option value="Prueba escrita">Prueba escrita</option>
+                            <option value="Prueba práctica">Prueba práctica</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Enunciado de la Actividad</label>
+                        <textarea id="enunciadoActividad" placeholder="Describe la actividad completa..." required></textarea>
+                    </div>
+                </div>
+
+                <!-- Momentos Pedagógicos -->
+                <div class="section">
+                    <div class="section-title">🎓 Momentos Pedagógicos</div>
+                    
+                    <div class="momentos">
+                        <div class="momento-card">
+                            <h3>🚀 Inicio</h3>
+                            <textarea id="momentoInicio" required>- Pase de lista
+- Video reflexivo o motivacional del día
+- Lluvia de ideas para explorar saberes previos sobre el tema
+- Presentación de los objetivos de aprendizaje de la clase</textarea>
+                        </div>
+
+                        <div class="momento-card">
+                            <h3>⚙️ Desarrollo</h3>
+                            <div class="subsection">
+                                <label>Actividades del Profesor:</label>
+                                <textarea id="desarrolloProfesor" placeholder="¿Qué hará el profesor? (explicación, demostración, modelado, etc.)" required></textarea>
+                            </div>
+                            <div class="subsection">
+                                <label>Actividades de los Estudiantes:</label>
+                                <textarea id="desarrolloEstudiantes" placeholder="¿Qué harán los estudiantes? (práctica, ejercicios, trabajo colaborativo, etc.)" required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="momento-card">
+                            <h3>✅ Cierre</h3>
+                            <textarea id="momentoCierre" required>- Los estudiantes comentan libremente sobre lo aprendido
+- Preguntas de metacognición:
+  * ¿Qué aprendí hoy?
+  * ¿Cómo lo aprendí?
+  * ¿Para qué me sirve lo que aprendí?
+  * ¿Qué dificultades tuve y cómo las superé?
+- Retroalimentación del profesor sobre el desempeño general
+- Asignación de tareas o actividades para la próxima clase (si aplica)</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recursos -->
+                <div class="section">
+                    <div class="section-title">🛠️ Recursos y Materiales</div>
+                    <div class="form-group">
+                        <textarea id="recursos" required>- Computadoras
+- Internet
+- PDI (Pizarra Digital Interactiva)
+- Proyector
+- Material didáctico digital
+- Plataforma educativa (Moodle, Google Classroom, etc.)</textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-generate">📄 Generar PDF</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de módulos por grado
+        const modulosPorGrado = {
+            '3ro': ['Taller-Ofimática'],
+            '4to': [
+                'Tecnologías Digitales',
+                'Diseño de Portales Web y Recursos Multimedia',
+                'Diseño y Desarrollo de Base de Datos'
+            ],
+            '5to': ['Diseño de Aplicaciones y Sistemas de Información'],
+            '6to': ['Implementación y Mantenimiento de Aplicaciones y Sistemas Informáticos']
+        };
+
+        // Resultados de Aprendizaje por módulo
+        const rasPorModulo = {
+            'Taller-Ofimática': [
+                'RA1: Procesa información mediante el uso de herramientas ofimáticas',
+                'RA2: Elabora presentaciones digitales efectivas',
+                'RA3: Gestiona datos en hojas de cálculo',
+                'RA4: Crea documentos profesionales con procesador de textos'
+            ],
+            'Tecnologías Digitales': [
+                'RA1: Identifica componentes de hardware y software',
+                'RA2: Configura sistemas operativos y aplicaciones',
+                'RA3: Gestiona redes y conectividad',
+                'RA4: Aplica medidas de seguridad informática'
+            ],
+            'Diseño de Portales Web y Recursos Multimedia': [
+                'RA1: Diseña interfaces web utilizando HTML y CSS',
+                'RA2: Desarrolla sitios web responsivos',
+                'RA3: Crea contenido multimedia para la web',
+                'RA4: Implementa páginas web dinámicas con JavaScript'
+            ],
+            'Diseño y Desarrollo de Base de Datos': [
+                'RA1: Analiza y diseña modelos de datos',
+                'RA2: Implementa bases de datos relacionales',
+                'RA3: Realiza consultas SQL',
+                'RA4: Gestiona y administra bases de datos'
+            ],
+            'Diseño de Aplicaciones y Sistemas de Información': [
+                'RA1: Analiza requerimientos de software',
+                'RA2: Diseña arquitecturas de aplicaciones',
+                'RA3: Elabora diagramas UML y documentación técnica',
+                'RA4: Desarrolla prototipos de aplicaciones'
+            ],
+            'Implementación y Mantenimiento de Aplicaciones y Sistemas Informáticos': [
+                'RA1: Implementa aplicaciones informáticas',
+                'RA2: Realiza pruebas de software',
+                'RA3: Documenta procesos de implementación',
+                'RA4: Gestiona el mantenimiento de sistemas'
+            ]
+        };
+
+        // Actualizar módulos según el grado seleccionado
+        function updateModulos() {
+            const grado = document.getElementById('gradoSeccion').value;
+            const moduloSelect = document.getElementById('moduloFormativo');
+            
+            if (!grado) {
+                moduloSelect.innerHTML = '<option value="">Primero seleccione un grado</option>';
+                return;
+            }
+
+            const gradoNum = grado.substring(0, 3);
+            const modulos = modulosPorGrado[gradoNum] || [];
+            
+            moduloSelect.innerHTML = '<option value="">Seleccionar módulo...</option>';
+            modulos.forEach(modulo => {
+                const option = document.createElement('option');
+                option.value = modulo;
+                option.textContent = modulo;
+                moduloSelect.appendChild(option);
+            });
+
+            // Limpiar RA
+            document.getElementById('resultadoAprendizaje').innerHTML = '<option value="">Primero seleccione un módulo</option>';
+        }
+
+        // Actualizar RA según el módulo seleccionado
+        function updateRA() {
+            const modulo = document.getElementById('moduloFormativo').value;
+            const raSelect = document.getElementById('resultadoAprendizaje');
+            
+            if (!modulo) {
+                raSelect.innerHTML = '<option value="">Primero seleccione un módulo</option>';
+                return;
+            }
+
+            const ras = rasPorModulo[modulo] || [];
+            raSelect.innerHTML = '<option value="">Seleccionar RA...</option>';
+            ras.forEach(ra => {
+                const option = document.createElement('option');
+                option.value = ra;
+                option.textContent = ra;
+                raSelect.appendChild(option);
+            });
+        }
+
+        // Manejo de logo personalizado
+        let logoDataUrl = 'https://res.cloudinary.com/duuonteo7/image/upload/v1764426096/Logo_CENSA_g7vn26.png';
+        
+        document.getElementById('logoUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    logoDataUrl = event.target.result;
+                    document.getElementById('logoImg').src = logoDataUrl;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Generar PDF
+        document.getElementById('planForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            let y = 50;
+            const lineHeight = 6;
+            const margin = 20;
+            const maxWidth = 170;
+
+            // Agregar logo centrado
+            try {
+                if (logoDataUrl.startsWith('http')) {
+                    // Cargar logo desde URL
+                    const img = await fetch(logoDataUrl)
+                        .then(res => res.blob())
+                        .then(blob => new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.readAsDataURL(blob);
+                        }));
+                    doc.addImage(img, 'PNG', 90, 10, 30, 30);
+                } else {
+                    doc.addImage(logoDataUrl, 'PNG', 90, 10, 30, 30);
+                }
+            } catch (error) {
+                console.log('Error al cargar logo:', error);
+            }
+
+            // Título
+            doc.setFontSize(14);
+            doc.setFont(undefined, 'bold');
+            doc.text('PLANILLA DE PLANIFICACIÓN POR ACTIVIDAD/RA', 105, 45, { align: 'center' });
+
+            // Información General
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Centro Educativo: ${document.getElementById('centroEducativo').value}`, margin, y);
+            y += lineHeight;
+            doc.text(`Profesor: ${document.getElementById('tecnicoProfesional').value}`, margin, y);
+            y += lineHeight;
+            doc.text(`Bachillerato: ${document.getElementById('nombreTecnico').value}`, margin, y);
+            y += lineHeight;
+            doc.text(`Grado/Sección: ${document.getElementById('gradoSeccion').value}`, margin, y);
+            y += lineHeight;
+            doc.text(`Módulo Formativo: ${document.getElementById('moduloFormativo').value}`, margin, y);
+            y += lineHeight;
+            doc.text(`RA: ${document.getElementById('resultadoAprendizaje').value}`, margin, y);
+            y += 8;
+
+            // Actividad
+            doc.setFont(undefined, 'bold');
+            doc.setFontSize(10);
+            doc.text('ACTIVIDAD: ' + document.getElementById('nombreActividad').value, margin, y);
+            y += lineHeight;
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(9);
+            doc.text(`Tipo: ${document.getElementById('tipoActividad').value}  |  Duración: ${document.getElementById('tiempoEstimado').value}  |  Valor: ${document.getElementById('valorActividad').value}`, margin, y);
+            y += lineHeight;
+            doc.text(`Instrumento de Evaluación: ${document.getElementById('instrumentoEvaluacion').value}`, margin, y);
+            y += 8;
+
+            // Enunciado
+            doc.setFont(undefined, 'bold');
+            doc.text('Enunciado de la Actividad:', margin, y);
+            y += lineHeight;
+            doc.setFont(undefined, 'normal');
+            const enunciado = doc.splitTextToSize(document.getElementById('enunciadoActividad').value, maxWidth);
+            doc.text(enunciado, margin, y);
+            y += enunciado.length * lineHeight + 6;
+
+            // Momentos Pedagógicos
+            if (y > 240) {
+                doc.addPage();
+                y = 20;
+            }
+
+            doc.setFont(undefined, 'bold');
+            doc.setFontSize(10);
+            doc.text('MOMENTOS PEDAGÓGICOS', margin, y);
+            y += 8;
+            doc.setFontSize(9);
+
+            // Inicio
+            doc.setFont(undefined, 'bold');
+            doc.text('INICIO', margin, y);
+            y += lineHeight;
+            doc.setFont(undefined, 'normal');
+            const inicio = doc.splitTextToSize(document.getElementById('momentoInicio').value, maxWidth);
+            doc.text(inicio, margin, y);
+            y += inicio.length * lineHeight + 6;
+
+            if (y > 240) {
+                doc.addPage();
+                y = 20;
+            }
+
+            // Desarrollo
+            doc.setFont(undefined, 'bold');
+            doc.text('DESARROLLO', margin, y);
+            y += lineHeight;
+            doc.setFont(undefined, 'italic');
+            doc.text('Actividades del Profesor:', margin, y);
+            y += lineHeight;
+            doc.setFont(undefined, 'normal');
+            const desarrolloProf = doc.splitTextToSize(document.getElementById('desarrolloProfesor').value, maxWidth);
+            doc.text(desarrolloProf, margin, y);
+            y += desarrolloProf.length * lineHeight + 4;
+
+            if (y > 240) {
+                doc.addPage();
+                y = 20;
+            }
+
+            doc.setFont(undefined, 'italic');
+            doc.text('Actividades de los Estudiantes:', margin, y);
+            y += lineHeight;
+            doc.setFont(undefined, 'normal');
+            const desarrolloEst = doc.splitTextToSize(document.getElementById('desarrolloEstudiantes').value, maxWidth);
+            doc.text(desarrolloEst, margin, y);
+            y += desarrolloEst.length * lineHeight + 6;
+
+            if (y > 240) {
+                doc.addPage();
+                y = 20;
+            }
+
+            // Cierre
+            doc.setFont(undefined, 'bold');
+            doc.text('CIERRE', margin, y);
+            y += lineHeight;
+            doc.setFont(undefined, 'normal');
+            const cierre = doc.splitTextToSize(document.getElementById('momentoCierre').value, maxWidth);
+            doc.text(cierre, margin, y);
+            y += cierre.length * lineHeight + 6;
+
+            if (y > 240) {
+                doc.addPage();
+                y = 20;
+            }
+
+            // Recursos
+            doc.setFont(undefined, 'bold');
+            doc.text('RECURSOS', margin, y);
+            y += lineHeight;
+            doc.setFont(undefined, 'normal');
+            const recursos = doc.splitTextToSize(document.getElementById('recursos').value, maxWidth);
+            doc.text(recursos, margin, y);
+
+            // Descargar
+            const nombreArchivo = `Planificacion_${document.getElementById('nombreActividad').value.replace(/\s+/g, '_')}.pdf`;
+            doc.save(nombreArchivo);
+        });
+    </script>
+</body>
+</html>

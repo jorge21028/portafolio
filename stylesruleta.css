@@ -1,0 +1,149 @@
+
+.contenedor-principal {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 1200px;
+}
+
+/* --- Carga de Archivos --- */
+.carga-archivos {
+    padding: 15px;
+    border: 1px dashed #ccc;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+#infoCarga {
+    font-style: italic;
+    color: #666;
+    margin-top: 10px;
+}
+
+/* --- Interacción y Ruleta --- */
+.interaccion {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.ruleta-area, .historial-area {
+    flex: 1;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+}
+
+.marco-ruleta {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 20px auto;
+    border: 5px solid #0056b3;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #eee;
+}
+
+.ruleta {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    transition: transform 5s cubic-bezier(0.25, 0.1, 0.25, 1); /* Transición de giro suave */
+}
+
+.segmento {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transform-origin: 100% 100%;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    color: white;
+    font-weight: bold;
+    font-size: 10px;
+    padding-left: 10px;
+    box-sizing: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.segmento span {
+    transform: rotate(calc(90deg + var(--rotation))) translate(80px); /* Girar el texto */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    text-align: center;
+}
+
+.puntero {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 25px solid #ff0000; /* Color rojo para el puntero */
+    z-index: 100;
+}
+
+/* --- Botones --- */
+button {
+    padding: 10px 20px;
+    margin-top: 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+#botonGirar {
+    background-color: #28a745; /* Verde para acción principal */
+    color: white;
+}
+
+#botonGirar:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+#botonReiniciar {
+    background-color: #dc3545; /* Rojo para acción de peligro */
+    color: white;
+    margin-top: 20px;
+}
+
+/* --- Historial de Salida --- */
+.caja-salida {
+    height: 250px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-top: 10px;
+    overflow-y: auto;
+    background-color: #fafafa;
+    white-space: pre-wrap; /* Mantiene saltos de línea y formato */
+}
+
+#ruleta-principal-container {
+    max-width: 1200px !important;
+    margin: 0 auto !important; /* Centrado */
+    /* ... demás estilos de fondo y caja ... */
+}
+
+/* Todos los selectores dentro deben usar el ID */
+#ruleta-principal-container .marco-ruleta {
+    width: 300px !important;
+    height: 300px !important;
+    /* ... */
+}

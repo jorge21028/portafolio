@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruleta | Poreguntas Interactivas</title>
+	<link rel="icon" type="image/png" href="icon/icon.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+ <header class="navbar">
+    <div class="navbar-content">
+        <div class="logo"><a href="index.html">J. L. Abreu | Portafolio Docente</a></div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li class="dropdown">
+                    <a href="#">Módulos</a>
+                    <ul class="submenu">
+                        <li><a href="DDBD.html">DDBD</a></li>
+                        <li><a href="DPWRM.html">DPWRM</a></li>
+                        <li><a href="TecDig.html">Tec.Dig</a></li>
+                        <li><a href="DASI.html">DASI</a></li>
+                        <li><a href="IMASI.html">IMASI</a></li>
+                        <li><a href="Talleres.html">Talleres</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#">Herramientas</a>
+                    <ul class="submenu">
+                        <li><a href="Horario.html">Horario</a></li>
+                        <li><a href="gestion_actividad.html">Actividades</a></li>
+                        <li><a href="ruleta.html">Ruleta</a></li>
+						<li><a href="Preguntas.html">Ruleta de Preguntas</a></li>
+						<li><a href="Planificacion-Diaria.html">Planificación Diaria</a></li>						
+                    </ul>
+                </li>
+                <li><a href="cv_soporte.html">CV/Soporte</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+    <main>
+        <section id="archivos-section">
+            <h3>⚙️ Configuración del Juego</h3>
+            <div id="opciones-repeticion">
+                <label>
+                    <input type="checkbox" id="check-participantes" checked> Permitir que los **Participantes** repitan turno (con preguntas nuevas).
+                </label>
+                <label>
+                    <input type="checkbox" id="check-preguntas"> Permitir que las **Preguntas** se repitan (el juego nunca terminaría).
+                </label>
+            </div>
+            
+            <h3>Paso 1: Cargar Participantes</h3>
+            <div id="cargar-participantes-div" class="cargar-div">
+                <label for="participantes-file-input">👤 Archivo de Participantes (.txt):</label>
+                <input type="file" id="participantes-file-input" accept=".txt">
+            </div>
+            
+            <h3>Paso 2: Cargar Preguntas</h3>
+            <div id="cargar-preguntas-div" class="cargar-div">
+                <label for="preguntas-file-input">❓ Archivo de Preguntas AIKEN (.txt):</label>
+                <input type="file" id="preguntas-file-input" accept=".txt">
+            </div>
+
+            <div id="estado-carga-div" class="resultado-box">
+                Esperando la carga de archivos...
+            </div>
+        </section>
+
+        <section id="ruleta-section" class="oculto">
+            <button id="girar-btn" disabled>Girar Ruleta y Obtener Pregunta</button>
+            
+            <button id="finalizar-btn">Finalizar Juego y Mostrar Resultados</button>
+            
+            <div id="resultado-participante" class="resultado-box"></div>
+        </section>
+
+        <section id="cuestionario-section" class="oculto">
+            <h2 id="pregunta-titulo"></h2>
+            <form id="formulario-opciones">
+                </form>
+            <button id="verificar-btn">Verificar Respuesta</button>
+            <div id="feedback-box"></div>
+        </section>
+        
+        <section id="resultados-tabla-section" class="oculto">
+            <h2>Resultados Finales del Juego</h2>
+            <div class="tabla-contenedor">
+                <table id="resultados-tabla">
+                    <thead>
+                        <tr>
+                            <th>Participante</th>
+                            <th>Preguntas Respondidas</th>
+                            <th>Aciertos (✅) / Errores (❌)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultados-tabla-body">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Jorge Luis Abreu Rodríguez | Portafolio Docente - C.E. Nuestra Señora de la Altagracia</p>
+    </footer>
+
+    <script>
+        // Variables de estado global
+        let participantes = [];
+        let bancoPreguntas = []; 
+        let participanteActual = null;
+        let preguntaActual = null;
+        let totalPreguntas = 0;
+        
+        let preguntasDisponibles = [];
+        let participantesNoJugados = []; 
+        let resultados = {};
+        
+        let participantesCargados = false;
+        let preguntasCargadas = false;
+        
+        let permitirRepetirParticipantes = true; 
+        let permitirRepetirPreguntas = false; 
+
+        // Elementos DOM
+        const girarBtn = document.getElementById('girar-btn');
+        const verificarBtn = document.getElementById('verificar-btn');
+        const resultadoParticipanteDiv = document.getElementById('resultado-participante');
+        const cuestionarioSection = document.getElementById('cuestionario-section');
+        const preguntaTitulo = document.getElementById('pregunta-titulo');
+        const formularioOpciones = document.getElementById('formulario-opciones');
+        const feedbackBox = document.getElementById('feedback-box');
+        const participantesFileInput = document.getElementById('participantes-file-input');
+        const preguntasFileInput = document.getElementById('preguntas-file-input');
+        const ruletaSection = document.getElementById('ruleta-section');
+        const estadoCargaDiv = document.getElementById('estado-carga-div');
+        const resultadosTablaSection = document.getElementById('resultados-tabla-section');
+        const resultadosTablaBody = document.getElementById('resultados-tabla-body');
+        const checkParticipantes = document.getElementById('check-participantes');
+        const checkPreguntas = document.getElementById('check-preguntas');
+        const finalizarBtn = document.getElementById('finalizar-btn'); // NUEVO BOTÓN
+
+        // --------------------------------------------------------
+        // LÓGICA DE INICIALIZACIÓN Y CONTROL DE CARGA
+        // --------------------------------------------------------
+
+        function inicializarJuego() {
+            totalPreguntas = bancoPreguntas.length;
+            
+            if (!permitirRepetirPreguntas) {
+                preguntasDisponibles = Array.from({length: totalPreguntas}, (_, i) => i);
+            }
+            
+            participantesNoJugados = [...participantes]; 
+
+            resultados = {};
+            participantes.forEach(nombre => {
+                resultados[nombre] = [];
+            });
+            
+            resultadosTablaSection.classList.add('oculto');
+            cuestionarioSection.classList.add('oculto');
+            
+            if (participantesCargados && preguntasCargadas && totalPreguntas > 0) {
+                girarBtn.disabled = false;
+                finalizarBtn.disabled = false; // HABILITAR BOTÓN FINALIZAR
+                ruletaSection.classList.remove('oculto');
+                estadoCargaDiv.className = 'resultado-box acierto-carga';
+                
+                let msgPreguntas = permitirRepetirPreguntas ? "ilimitadas" : `${totalPreguntas} restantes`;
+                estadoCargaDiv.innerHTML = `✅ **Archivos listos.** ${participantes.length} participantes y preguntas ${msgPreguntas} cargadas.`;
+            } else {
+                girarBtn.disabled = true;
+                finalizarBtn.disabled = true; // DESHABILITAR BOTÓN FINALIZAR
+                ruletaSection.classList.add('oculto');
+                estadoCargaDiv.className = 'resultado-box error-carga';
+                estadoCargaDiv.innerHTML = `❌ **Pendiente de carga:** Verifique que ambos archivos (.txt) estén seleccionados y contengan contenido.`;
+            }
+        }
+
+        // Función para parsear el formato AIKEN (Mantenida la corrección de saltos de línea)
+        function parsearAiken(contenido) {
+            const contenidoLimpio = contenido.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            const preguntas = [];
+            const bloques = contenidoLimpio.split(/\n{2,}/).filter(b => b.trim() !== '');
+
+            const regexOpcion = /^[A-Z]\.\s*(.*)/;
+            const regexRespuesta = /^ANSWER:\s*([A-Z])/;
+
+            for (const bloque of bloques) {
+                const lineas = bloque.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                
+                if (lineas.length < 3) continue; 
+
+                const preguntaTexto = lineas[0];
+                const opcionesTexto = lineas.slice(1, -1);
+                const respuestaLinea = lineas[lineas.length - 1];
+
+                const opciones = [];
+                let respuestaLetra = null;
+                let respuestaCorrecta = null;
+
+                opcionesTexto.forEach(linea => {
+                    const match = linea.match(regexOpcion);
+                    if (match) {
+                        opciones.push(match[1]); 
+                    }
+                });
+
+                const respuestaMatch = respuestaLinea.match(regexRespuesta);
+                if (respuestaMatch) {
+                    respuestaLetra = respuestaMatch[1];
+                    const indice = respuestaLetra.charCodeAt(0) - 'A'.charCodeAt(0);
+                    respuestaCorrecta = opciones[indice]; 
+                }
+                
+                if (opciones.length >= 2 && respuestaCorrecta) {
+                    preguntas.push({
+                        pregunta: preguntaTexto,
+                        opciones: opciones,
+                        correcta: respuestaCorrecta 
+                    });
+                }
+            }
+            return preguntas;
+        }
+
+        // Función genérica para leer archivos (Mantenida)
+        function leerArchivo(evento, tipo) {
+            const archivo = evento.target.files[0];
+            if (!archivo) return;
+
+            const lector = new FileReader();
+
+            lector.onload = function(e) {
+                const contenido = e.target.result;
+                
+                if (tipo === 'participantes') {
+                    participantes = contenido.split('\n')
+                                         .map(nombre => nombre.trim())
+                                         .filter(nombre => nombre.length > 0);
+                    participantesCargados = participantes.length > 0;
+                } else if (tipo === 'preguntas') {
+                    bancoPreguntas = parsearAiken(contenido);
+                    preguntasCargadas = bancoPreguntas.length > 0;
+                }
+
+                inicializarJuego();
+            };
+
+            lector.onerror = function() {
+                estadoCargaDiv.className = 'resultado-box error-carga';
+                estadoCargaDiv.innerHTML = "❌ Error al leer uno de los archivos.";
+                if (tipo === 'participantes') participantesCargados = false;
+                if (tipo === 'preguntas') preguntasCargadas = false;
+                inicializarJuego();
+            };
+
+            lector.readAsText(archivo);
+        }
+
+        // --------------------------------------------------------
+        // LÓGICA DE RUEDA AJUSTADA (Mantenida)
+        // --------------------------------------------------------
+
+        function girarRuleta() {
+            // 1. Control de Fin de Juego por Preguntas (Solo si NO se permite repetir)
+            if (!permitirRepetirPreguntas && preguntasDisponibles.length === 0) {
+                terminarJuego();
+                return;
+            }
+            
+            // 2. Control de Fin de Juego por Participantes (Solo si NO se permite repetir)
+            if (!permitirRepetirParticipantes && participantesNoJugados.length === 0) {
+                terminarJuego();
+                return;
+            }
+            
+            // Reiniciar estado visual
+            feedbackBox.innerHTML = '';
+            verificarBtn.style.display = 'block';
+            cuestionarioSection.classList.add('oculto');
+            
+            // 3. Seleccionar Participante
+            let listaParticipantes;
+            if (permitirRepetirParticipantes) {
+                listaParticipantes = participantes; 
+            } else {
+                listaParticipantes = participantesNoJugados; 
+            }
+
+            if (listaParticipantes.length === 0) return; 
+
+            const indiceParticipante = Math.floor(Math.random() * listaParticipantes.length);
+            participanteActual = listaParticipantes[indiceParticipante]; 
+
+            if (!permitirRepetirParticipantes) {
+                participantesNoJugados.splice(indiceParticipante, 1);
+            }
+
+            // 4. Seleccionar Pregunta
+            let indicePreguntaReal;
+            let msgRestantes;
+            
+            if (permitirRepetirPreguntas) {
+                indicePreguntaReal = Math.floor(Math.random() * totalPreguntas);
+                msgRestantes = "ilimitadas";
+            } else {
+                const indicePreguntaDisp = Math.floor(Math.random() * preguntasDisponibles.length);
+                indicePreguntaReal = preguntasDisponibles[indicePreguntaDisp];
+                preguntasDisponibles.splice(indicePreguntaDisp, 1);
+                msgRestantes = `${preguntasDisponibles.length} restantes`;
+            }
+
+            preguntaActual = bancoPreguntas[indicePreguntaReal];
+            
+            // 5. Mostrar resultado del giro
+            resultadoParticipanteDiv.innerHTML = `🎉 ¡Turno para: **${participanteActual}**! Quedan ${msgRestantes}.`;
+            
+            // 6. Mostrar cuestionario
+            renderizarPregunta(preguntaActual);
+            cuestionarioSection.classList.remove('oculto');
+            verificarBtn.style.display = 'block'; 
+        }
+
+        // Otras funciones (Mantenidas)
+        function renderizarPregunta(pregunta) {
+            preguntaTitulo.textContent = pregunta.pregunta;
+            formularioOpciones.innerHTML = ''; 
+
+            pregunta.opciones.forEach((opcion, index) => {
+                const idOpcion = `opcion-${index}`;
+                const divContenedor = document.createElement('div');
+                divContenedor.className = 'opcion-item';
+                
+                const inputRadio = document.createElement('input');
+                inputRadio.type = 'radio';
+                inputRadio.id = idOpcion;
+                inputRadio.name = 'respuesta'; 
+                inputRadio.value = opcion;
+                
+                const labelOpcion = document.createElement('label');
+                labelOpcion.htmlFor = idOpcion;
+                labelOpcion.textContent = opcion;
+                
+                divContenedor.appendChild(inputRadio);
+                divContenedor.appendChild(labelOpcion);
+                formularioOpciones.appendChild(divContenedor);
+            });
+        }
+
+        function verificarRespuesta() {
+            if (!preguntaActual) return;
+
+            const opciones = document.getElementsByName('respuesta');
+            let respuestaSeleccionada = null;
+
+            for (const opcion of opciones) {
+                if (opcion.checked) {
+                    respuestaSeleccionada = opcion.value;
+                    break;
+                }
+            }
+
+            if (!respuestaSeleccionada) {
+                feedbackBox.className = 'feedback-box error';
+                feedbackBox.innerHTML = '⚠️ Debe seleccionar una opción para verificar.';
+                return;
+            }
+
+            const esCorrecta = (respuestaSeleccionada === preguntaActual.correcta);
+            
+            if (!resultados[participanteActual]) {
+                resultados[participanteActual] = [];
+            }
+            resultados[participanteActual].push({
+                pregunta: preguntaActual.pregunta,
+                acierto: esCorrecta
+            });
+
+            if (esCorrecta) {
+                feedbackBox.className = 'feedback-box acierto';
+                feedbackBox.innerHTML = `✅ **¡Acierto!** La respuesta es correcta.`;
+            } else {
+                feedbackBox.className = 'feedback-box error';
+                feedbackBox.innerHTML = `❌ **Error.** La respuesta correcta era: **${preguntaActual.correcta}**.`;
+            }
+            
+            verificarBtn.style.display = 'none';
+        }
+        
+        function terminarJuego() {
+            ruletaSection.classList.add('oculto');
+            cuestionarioSection.classList.add('oculto');
+            
+            // Muestra el mensaje final en el área de resultados
+            resultadoParticipanteDiv.innerHTML = "🏆 **¡FINAL DEL JUEGO!** 🏆";
+            resultadoParticipanteDiv.className = 'resultado-box acierto-carga'; 
+            
+            mostrarResultados();
+        }
+
+        function mostrarResultados() {
+            resultadosTablaSection.classList.remove('oculto');
+            resultadosTablaBody.innerHTML = '';
+            
+            const resumenResultados = Object.keys(resultados).map(nombre => {
+                const aciertos = resultados[nombre].filter(r => r.acierto).length;
+                const totalRespondidas = resultados[nombre].length;
+                const errores = totalRespondidas - aciertos;
+                return {
+                    nombre: nombre,
+                    aciertos: aciertos,
+                    errores: errores,
+                    total: totalRespondidas
+                };
+            }).filter(r => r.total > 0);
+
+            if (resumenResultados.length === 0) {
+                resultadosTablaBody.innerHTML = '<tr><td colspan="3">Ningún participante respondió preguntas.</td></tr>';
+                return;
+            }
+
+            resumenResultados.sort((a, b) => b.aciertos - a.aciertos); 
+            
+            resumenResultados.forEach(res => {
+                const fila = resultadosTablaBody.insertRow();
+                fila.insertCell().textContent = res.nombre;
+                fila.insertCell().textContent = res.total;
+                
+                const celdaAciertos = fila.insertCell();
+                celdaAciertos.innerHTML = `<span class="acierto-txt">✅ ${res.aciertos}</span> / <span class="error-txt">❌ ${res.errores}</span>`;
+                
+                if (res.aciertos === resumenResultados[0].aciertos && res.aciertos > 0) {
+                     fila.classList.add('fila-exito');
+                }
+            });
+        }
+
+        // --- Event Listeners ---
+        girarBtn.addEventListener('click', girarRuleta);
+        verificarBtn.addEventListener('click', verificarRespuesta);
+        finalizarBtn.addEventListener('click', terminarJuego); // NUEVO LISTENER
+
+        participantesFileInput.addEventListener('change', (e) => leerArchivo(e, 'participantes'));
+        preguntasFileInput.addEventListener('change', (e) => leerArchivo(e, 'preguntas'));
+        
+        checkParticipantes.addEventListener('change', () => {
+            permitirRepetirParticipantes = checkParticipantes.checked;
+            inicializarJuego(); 
+        });
+        
+        checkPreguntas.addEventListener('change', () => {
+            permitirRepetirPreguntas = checkPreguntas.checked;
+            inicializarJuego(); 
+        });
+        
+        inicializarJuego();
+
+    </script>
+</body>
+</html>

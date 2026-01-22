@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Actividad y Temporizador</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+          label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .row {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.row > div {
+    flex: 1;
+}
+
+.row .puntos-col {
+    flex: 0 0 150px;
+}
+
+        input[type="text"], textarea, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        #setTimerButton {
+            background: #28a745;
+            width: 100%;
+        }
+
+        #setTimerButton:hover {
+            background: #218838;
+        }
+
+        hr {
+            margin: 30px 0;
+            border: none;
+            border-top: 2px solid #eee;
+        }
+
+        .buttons-timer {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        #startButton {
+            background: #28a745;
+        }
+
+        #startButton:hover {
+            background: #218838;
+        }
+
+        #pauseButton {
+            background: #ffc107;
+        }
+
+        #pauseButton:hover {
+            background: #e0a800;
+        }
+
+        #resetButton {
+            background: #f0ad4e;
+        }
+
+        #resetButton:hover {
+            background: #ec971f;
+        }
+
+        /* Estilos para la ventana emergente */
+        .popup-window {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            z-index: 1000;
+            min-width: 400px;
+            max-width: 90vw;
+            display: none;
+        }
+
+        .popup-window.active {
+            display: block;
+        }
+
+        .popup-header {
+            background: rgba(0,0,0,0.2);
+            padding: 15px 20px;
+            border-radius: 15px 15px 0 0;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .popup-title {
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .popup-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .popup-close:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+
+        .popup-content {
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .popup-content p {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        #popupCountdown {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 20px 0;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-family: 'Courier New', monospace;
+        }
+
+        #popupStatus {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+        }
+
+        .show-popup-btn {
+            background: #6c757d;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .show-popup-btn:hover {
+            background: #5a6268;
+        }
+
+        @media (max-width: 600px) {
+            .popup-window {
+                min-width: 300px;
+            }
+
+            #popupCountdown {
+                font-size: 3em;
+            }
+        }
+        #downloadButton {
+            background: #007bff; /* Color azul */
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        #downloadButton:hover {
+            background: #0056b3; /* Azul más oscuro al pasar el ratón */
+        }
+        
+    </style>
+        <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="navbar">
+    <div class="navbar-content">
+        <div class="logo"><a href="index.html">J. L. Abreu | Portafolio Docente</a></div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li class="dropdown">
+                    <a href="#">Módulos</a>
+                    <ul class="submenu">
+                        <li><a href="DDBD.html">DDBD</a></li>
+                        <li><a href="DPWRM.html">DPWRM</a></li>
+                        <li><a href="TecDig.html">Tec.Dig</a></li>
+                        <li><a href="DASI.html">DASI</a></li>
+                        <li><a href="IMASI.html">IMASI</a></li>
+                        <li><a href="Talleres.html">Talleres</a></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a href="#">Herramientas</a>
+                    <ul class="submenu">
+                        <li><a href="Horario.html">Horario</a></li>
+                        <li><a href="gestion_actividad.html">Actividades</a></li>
+                        <li><a href="ruleta.html">Ruleta</a></li>
+						<li><a href="Preguntas.html">Ruleta de Preguntas</a></li>
+						<li><a href="Planificacion-Diaria.html">Planificación Diaria</a></li>						
+                    </ul>
+                </li>
+                <li><a href="cv_soporte.html">CV/Soporte</a></li>
+            </ul>
+        </nav>
+    </div>
+    </header>
+    
+ <div class="container"> 
+        <h1>⏱️ Gestión de Actividad y Cuenta Regresiva</h1>
+
+        <div class="config-area">
+            <h2>Datos de la Actividad</h2>
+            <label for="grupoNombre">Grupo / Asignatura:</label>
+            <input type="text" id="grupoNombre" value="Diseño y Desarrollo de Base de Datos">
+            
+            <label for="tituloActividad">Título de la Actividad:</label>
+            <input type="text" id="tituloActividad" value="Práctica de Normalización">
+            
+<div class="row">
+    <div>
+        <label for="actividadDescripcion">Descripción de la Actividad:</label>
+        <textarea id="actividadDescripcion" rows="4">Diseño de Tablas y Normalización.</textarea>
+    </div>
+    <div class="puntos-col">
+        <label for="puntosActividad">Puntos:</label>
+        <input type="number" id="puntosActividad" value="10" min="0" max="100">
+    </div>
+    <div>
+       <label for="objetivoActividad">Objetivo de la Actividad:</label>
+       <textarea id="objetivoActividad" rows="3">Aplicar conceptos de normalización de bases de datos.</textarea>
+    </div>
+</div>
+
+            <h2>Establecer Tiempo (Minutos):</h2>
+            <input type="number" id="inputMinutos" value="15" min="1" max="180">
+            <button id="setTimerButton">Establecer y Reiniciar</button>
+        </div>
+        
+        <hr>
+
+        <div class="buttons-timer">
+            <button id="startButton">▶️ Iniciar</button>
+            <button id="pauseButton">⏸️ Pausar</button>
+            <button id="resetButton">🔄 Reiniciar a Cero</button>
+        </div>
+
+<button class="show-popup-btn" id="showPopupButton">🪟 Abrir Ventana Externa</button>
+        <div class="window-status" id="windowStatus">
+            La ventana externa no está abierta
+        </div>
+
+        <button id="downloadButton" style="background: #007bff; margin-top: 15px;">💾 Descargar Información de la Actividad (.txt)</button>
+    </div>
+    </div>
+
+    <script>
+        // Variables del temporizador
+        let totalSeconds = 0;
+        let remainingSeconds = 0;
+        let timerInterval = null;
+        let isRunning = false;
+        let popupWindow = null;
+
+        // Elementos del DOM
+        const grupoInput = document.getElementById('grupoNombre');
+        const tituloInput = document.getElementById('tituloActividad');
+        const puntosInput = document.getElementById('puntosActividad');
+        const objetivoInput = document.getElementById('objetivoActividad');
+        const actividadInput = document.getElementById('actividadDescripcion');
+        const minutosInput = document.getElementById('inputMinutos');
+        const setTimerBtn = document.getElementById('setTimerButton');
+        const startBtn = document.getElementById('startButton');
+        const pauseBtn = document.getElementById('pauseButton');
+        const resetBtn = document.getElementById('resetButton');
+        const showPopupBtn = document.getElementById('showPopupButton');
+        const windowStatus = document.getElementById('windowStatus');
+
+        // Funciones del temporizador
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function updateDisplay() {
+            if (popupWindow && !popupWindow.closed) {
+                const countdownEl = popupWindow.document.getElementById('popupCountdown');
+                if (countdownEl) {
+                    countdownEl.textContent = formatTime(remainingSeconds);
+                }
+            }
+        }
+
+        function updateStatus(text, color) {
+            if (popupWindow && !popupWindow.closed) {
+                const statusEl = popupWindow.document.getElementById('popupStatus');
+                if (statusEl) {
+                    statusEl.textContent = text;
+                    statusEl.style.color = color;
+                }
+            }
+        }
+
+        function startTimer() {
+            if (remainingSeconds <= 0) {
+                alert('Por favor, establece un tiempo primero.');
+                return;
+            }
+            if (!isRunning) {
+                isRunning = true;
+                updateStatus('▶️ En curso', '#28a745');
+                timerInterval = setInterval(() => {
+                    if (remainingSeconds > 0) {
+                        remainingSeconds--;
+                        updateDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isRunning = false;
+                        updateStatus('⏰ ¡Tiempo terminado!', '#dc3545');
+                        alert('¡El tiempo ha terminado!');
+                    }
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                isRunning = false;
+                updateStatus('⏸️ Pausado', '#ffc107');
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            remainingSeconds = 0;
+            updateDisplay();
+            updateStatus('⏹️ Detenido', '#dc3545');
+        }
+
+        function setTimer() {
+            const minutes = parseInt(minutosInput.value) || 15;
+            totalSeconds = minutes * 60;
+            remainingSeconds = totalSeconds;
+            clearInterval(timerInterval);
+            isRunning = false;
+            updateDisplay();
+            updateActivityInfo();
+            updateStatus('⏹️ Configurado', '#6c757d');
+        }
+
+        // ... otras funciones del temporizador
+
+        function downloadActivityInfo() {
+            // 1. Obtener los valores
+            const grupo = grupoInput.value;
+            const titulo = tituloInput.value;
+            const descripcion = actividadInput.value;
+            const puntos = puntosInput.value;
+            const objetivo = objetivoInput.value;
+
+            // 2. Formatear el contenido del archivo
+            const content = `--- Información de la Actividad ---\n\n` +
+                            `Grupo / Asignatura: ${grupo}\n` +
+                            `Título de la Actividad: ${titulo}\n` +
+                            `Puntos: ${puntos}\n\n` +
+                            `Objetivo:\n${objetivo}\n\n` +
+                            `Descripción Detallada:\n${descripcion}\n\n` +
+                            `---------------------------------`;
+
+            // 3. Generar el nombre del archivo (Fecha y Título)
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            // Sanitizar el título para el nombre del archivo
+            const sanitizedTitle = titulo.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_');
+            const filename = `${formattedDate}_${sanitizedTitle}_Actividad.txt`;
+
+            // 4. Crear un Blob (Objeto binario grande) con el contenido
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+
+            // 5. Crear y simular el clic en un enlace
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a); // Limpiar el elemento temporal
+
+            // Liberar el objeto URL
+            URL.revokeObjectURL(url);
+        }
+
+        // ... resto de funciones
+
+        function updateActivityInfo() {
+            if (popupWindow && !popupWindow.closed) {
+const puntosEl = popupWindow.document.getElementById('popupPuntos');
+const objetivoEl = popupWindow.document.getElementById('popupObjetivo');
+
+if (grupoEl) grupoEl.textContent = grupoInput.value;
+if (tituloEl) tituloEl.textContent = tituloInput.value;
+if (actividadEl) actividadEl.textContent = actividadInput.value;
+if (puntosEl) puntosEl.textContent = puntosInput.value;
+if (objetivoEl) objetivoEl.textContent = objetivoInput.value;
+            }
+        }
+
+        function createPopupContent() {
+            return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temporizador</title>
+    <style>
+      * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.popup-content {
+    text-align: center;
+    color: white;
+    width: 100%;
+    max-width: 800px;
+}
+.header-info {
+    background: rgba(255,255,255,0.25);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+#popupGrupo {
+    font-size: 1.8em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    display: block;
+}
+#popupTitulo {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    display: block;
+    color: #fff3cd;
+}
+.info-box {
+    background: rgba(255,255,255,0.15);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+.info-label {
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin-bottom: 5px;
+}
+#popupActividad {
+    white-space: pre-wrap;
+    display: block;
+    margin-top: 5px;
+    font-size: 1.3em;
+    line-height: 1.6;
+}
+.puntos-badge {
+    display: inline-block;
+    background: rgba(255, 215, 0, 0.3);
+    color: #ffd700;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: 10px;
+    border: 2px solid rgba(255, 215, 0, 0.5);
+}
+#popupObjetivo {
+    white-space: pre-wrap;
+    display: block;
+    margin-top: 15px;
+    font-size: 1.1em;
+    line-height: 1.5;
+    font-style: italic;
+    opacity: 0.95;
+}
+
+#popupCountdown {
+    font-size: 5em;
+    font-weight: bold;
+    margin: 30px 0;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    font-family: 'Courier New', monospace;
+}
+#popupStatus {
+    font-size: 1.3em;
+    font-weight: bold;
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+}
+    </style>
+</head>
+<body>
+    <div class="popup-content">
+        <div class="header-info">
+            <span id="popupGrupo">${grupoInput.value}</span>
+            <span id="popupTitulo">${tituloInput.value}</span>
+        </div>
+        
+        <div class="info-box">
+            <div class="info-label">Descripción:</div>
+            <span id="popupActividad">${actividadInput.value}</span>
+<div>
+    <span class="puntos-badge">⭐ <span id="popupPuntos">${puntosInput.value}</span> puntos</span>
+</div>
+<div class="info-label" style="margin-top: 20px;">Objetivo:</div>
+<span id="popupObjetivo">${objetivoInput.value}</span>
+        </div>
+        
+        <div id="popupCountdown">${formatTime(remainingSeconds)}</div>
+        <div id="popupStatus">⏹️ Configurado</div>
+    </div>
+</body>
+</html>
+            `;
+        }
+
+        function openPopupWindow() {
+            if (popupWindow && !popupWindow.closed) {
+                popupWindow.focus();
+                return;
+            }
+
+            // Características de la ventana
+            const width = 800;
+            const height = 550;
+            const left = screen.width - width - 50;
+            const top = 50;
+            
+            const features = `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=no,status=no,menubar=no,toolbar=no,location=no`;
+            
+            popupWindow = window.open('', 'TimerWindow', features);
+            
+            if (popupWindow) {
+                popupWindow.document.write(createPopupContent());
+                popupWindow.document.close();
+                windowStatus.textContent = '✅ Ventana externa abierta - Puedes moverla a otro monitor';
+                windowStatus.style.color = '#28a745';
+                
+                // Detectar cuando se cierra la ventana
+                const checkClosed = setInterval(() => {
+                    if (popupWindow.closed) {
+                        clearInterval(checkClosed);
+                        windowStatus.textContent = '❌ La ventana externa se ha cerrado';
+                        windowStatus.style.color = '#dc3545';
+                        popupWindow = null;
+                    }
+                }, 1000);
+            } else {
+                alert('No se pudo abrir la ventana emergente. Por favor, permite las ventanas emergentes en tu navegador.');
+                windowStatus.textContent = '❌ Bloqueada por el navegador - Permite ventanas emergentes';
+                windowStatus.style.color = '#dc3545';
+            }
+        }
+
+        // Event listeners
+        setTimerBtn.addEventListener('click', setTimer);
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        showPopupBtn.addEventListener('click', openPopupWindow);
+        // Event listeners
+        setTimerBtn.addEventListener('click', setTimer);
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        showPopupBtn.addEventListener('click', openPopupWindow);
+        
+        // Nuevo Event Listener para la descarga
+        const downloadBtn = document.getElementById('downloadButton');
+        downloadBtn.addEventListener('click', downloadActivityInfo);
+
+        // Inicializar
+        setTimer();
+
+        // Inicializar
+        setTimer();
+    </script>
+</body>
+</html>
