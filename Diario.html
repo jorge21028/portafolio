@@ -1,79 +1,16 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diario Anecdótico - Registro Docente</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; margin: 20px; }
-        .container { max-width: 650px; margin: auto; background: #fff; padding: 35px; border-radius: 10px; box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); }
-        h1 { color: #0056b3; border-bottom: 3px solid #0056b3; padding-bottom: 12px; margin-bottom: 25px; text-align: center; }
-        label { display: block; margin-top: 18px; margin-bottom: 6px; font-weight: 600; color: #1c3a5e; }
-        input[type="text"], select, textarea { width: 100%; padding: 12px; margin-bottom: 22px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
-        input[type="text"]:focus, select:focus, textarea:focus { border-color: #007bff; outline: none; box-shadow: 0 0 5px rgba(0, 123, 255, 0.2); }
-        textarea { resize: vertical; }
-        button { background-color: #28a745; color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 18px; width: 100%; transition: background-color 0.3s ease; }
-        button:hover:not(:disabled) { background-color: #1e7e34; }
-        #fecha-display { background-color: #eee; padding: 12px; border: 1px solid #ccc; border-radius: 6px; margin-bottom: 22px; }
-    </style>
-</head>
-<body>
+---
+layout: default
+title: Diario Reflexivo
+---
 
-<div class="container">
-    <h1>Diario Anecdótico - Registro Docente</h1>
+<h1>Diario Reflexivo Docente</h1>
 
-    <form id="anecdotaForm" method="POST" action="<?= ScriptApp.getService().getUrl() ?>">
-        
-        <label for="curso">Seleccione el Curso (Hoja de Destino):</label>
-        <select id="curso" name="curso" required>
-            <option value="">-- Seleccione el Curso --</option>
-        </select>
-
-        <label for="fecha-display">Fecha de Registro (Se guarda la fecha del servidor):</label>
-        <div id="fecha-display"></div>
-        
-        <label for="nombreEstudiante">Nombre del Estudiante:</label>
-        <input type="text" id="nombreEstudiante" name="nombreEstudiante" required placeholder="Ej: Juan Pérez">
-
-        <label for="situacionesObservadas">Situaciones Observadas:</label>
-        <textarea id="situacionesObservadas" name="situacionesObservadas" rows="4" required placeholder="Describa la situación ocurrida..."></textarea>
-
-        <label for="accionesCorrectivas">Acciones Correctivas Tomadas:</label>
-        <textarea id="accionesCorrectivas" name="accionesCorrectivas" rows="3" required placeholder="Ej: Llamada a los padres, citación, remisión a orientación..."></textarea>
-
-        <label for="compromisos">Compromisos Adquiridos:</label>
-        <textarea id="compromisos" name="compromisos" rows="3" required placeholder="Compromiso del estudiante/padre y la fecha de seguimiento..."></textarea>
-        
-        <button type="submit" id="submitBtn">Guardar Registro en Google Sheets</button>
-    </form>
-</div>
-
-<script>
-    // Cursos que definen los nombres de las hojas en su libro
-    const CURSOS = ['3ro A', '3ro B', '4to B', '4to C', '5to B', '6to C'];
-
-    const cursoSelect = document.getElementById('curso');
-    const fechaDisplay = document.getElementById('fecha-display');
-
-    // Inicialización del formulario
-    document.addEventListener('DOMContentLoaded', () => {
-        // 1. Establecer la fecha actual de forma amigable (para visualización)
-        const now = new Date();
-        const formattedDate = now.toLocaleDateString('es-DO', { 
-            year: 'numeric', month: 'long', day: 'numeric' 
-        });
-        fechaDisplay.textContent = formattedDate;
-
-        // 2. Cargar opciones de curso
-        cursoSelect.innerHTML = '<option value="">-- Seleccione el Curso --</option>';
-        CURSOS.forEach(curso => {
-            const option = document.createElement('option');
-            option.value = curso;
-            option.textContent = curso;
-            cursoSelect.appendChild(option);
-        });
-    });
-</script>
-
-</body>
-</html>
+<ul>
+  {% for post in site.posts %}
+    <li>
+      <a href="{{ post.url }}">
+        {{ post.date | date: "%d/%m/%Y" }} – {{ post.title }}
+      </a>
+    </li>
+  {% endfor %}
+</ul>
