@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Anecdótico Docente</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Ajustes adicionales para coherencia */
+        .oculto { display: none; }
+        .tab-btn { cursor: pointer; padding: 10px 20px; margin-right: 5px; border: none; background: #e9ecef; border-radius: 5px; }
+        .tab-btn.activo { background: #007bff; color: white; }
+        .panel-consulta { margin-top: 20px; overflow-x: auto; }
+        select.opcion-item { width: 100%; height: 45px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">Panel Docente - Prof. Abreu</div>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 80px;">
+        <h1>Diario Anecdótico y Reflexivo</h1>
+        <p class="metadata">Gestión de Incidencias y Seguimiento Académico</p>
+
+        <div class="content-box">
+            <h2><i class="fas fa-edit"></i> Registrar Nuevo Evento</h2>
+            <div class="tabs" style="margin-bottom: 20px;">
+                <button class="tab-btn activo" onclick="cambiarModo('incidencia', this)">Incidencia Estudiante</button>
+                <button class="tab-btn" onclick="cambiarModo('reflexion', this)">Reflexión del Día</button>
+            </div>
+
+            <div id="form-incidencia">
+                <label>Curso:</label>
+                <select id="sel-curso" class="opcion-item" onchange="cargarEstudiantesPorCurso()">
+                    <option value="">Seleccione un curso...</option>
+                    <option value="3ro A">3ro A</option>
+					<option value="3ro B">3ro B</option> 
+				    <option value="4to B">4to B</option>
+					<option value="4to C">4to C</option>
+					<option value="5to B">5to B</option>
+					<option value="6to B">6to B</option>
+
+                </select>
+
+                <label>Estudiante:</label>
+                <select id="sel-estudiante" class="opcion-item" disabled>
+                    <option value="">Primero elija un curso...</option>
+                </select>
+
+                <label>Descripción:</label>
+                <textarea id="txt-descripcion" class="opcion-item" style="height: 100px; width: 95%;"></textarea>
+                <button onclick="enviar('INCIDENCIA')" style="width: 100%;">Guardar Incidencia</button>
+            </div>
+
+            <div id="form-reflexion" class="oculto">
+                <label>Reflexión Diaria:</label>
+                <textarea id="txt-reflexion" class="opcion-item" style="height: 150px; width: 95%;"></textarea>
+                <button onclick="enviar('REFLEXION')" style="width: 100%; background-color: #28a745;">Guardar Diario</button>
+            </div>
+            
+            <div id="msg-status" style="margin-top: 15px; text-align: center;"></div>
+        </div>
+
+        <div class="content-box">
+            <h2><i class="fas fa-search"></i> Consultar Historial</h2>
+            <div class="tabs">
+                <button class="tab-btn activo" onclick="verConsulta('tabla-incidencias', this)">Ver Incidencias</button>
+                <button class="tab-btn" onclick="verConsulta('tabla-reflexiones', this)">Ver Reflexiones</button>
+            </div>
+
+            <div id="panel-incidencias" class="panel-consulta">
+                <input type="text" id="busqueda" placeholder="Buscar por estudiante..." onkeyup="filtrarTabla()" class="opcion-item" style="width: 95%;">
+                <table id="resultados-tabla">
+                    <thead>
+                        <tr><th>Fecha</th><th>Curso</th><th>Estudiante</th><th>Descripción</th></tr>
+                    </thead>
+                    <tbody id="body-incidencias"></tbody>
+                </table>
+            </div>
+
+            <div id="panel-reflexiones" class="panel-consulta oculto">
+                <table id="resultados-tabla">
+                    <thead>
+                        <tr><th>Fecha</th><th>Contenido</th></tr>
+                    </thead>
+                    <tbody id="body-reflexiones"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const URL_API = "https://script.google.com/macros/s/AKfycbxNfSOTBDnS1ND6MoX2MsaFp9Ono-kEFyoNfqxb16aJSB0_h6bT36Go-BzfueJePufy/exec";
+        let db = { estudiantes: [], incidencias: [], reflexiones: [] };
+
+        async function inicializar() {
+            try {
+                const response = await fetch(URL_API);
+                db = await response.json();
+                renderizarTablas();
+            } catch (e) { console.error("Error al cargar datos"); }
+        }
+
+        function cargarEstudiantesPorCurso() {
+            const curso = document.getElementById('sel-curso').value;
+            const selEst = document.getElementById('sel-estudiante');
+            selEst.innerHTML = '<option value="">Seleccione Estudiante...</option>';
+            
+            const filtrados = db.estudiantes.filter(e => e.curso === curso);
+            filtrados.forEach(e => {
+                let opt = document.createElement('option');
+                opt.value = opt.text = e.nombre;
+                selEst.appendChild(opt);
+            });
+            selEst.disabled = filtrados.length === 0;
+        }
+
+        async function enviar(tipo) {
+            const btn = event.target;
+            const status = document.getElementById('msg-status');
+            let payload = { tipo: tipo };
+
+            if (tipo === 'INCIDENCIA') {
+                payload.curso = document.getElementById('sel-curso').value;
+                payload.estudiante = document.getElementById('sel-estudiante').value;
+                payload.descripcion = document.getElementById('txt-descripcion').value;
+                if (!payload.estudiante || !payload.descripcion) return alert("Complete los campos");
+            } else {
+                payload.reflexion = document.getElementById('txt-reflexion').value;
+                if (!payload.reflexion) return alert("Escriba la reflexión");
+            }
+
+            btn.disabled = true;
+            status.innerHTML = "Guardando en la nube...";
+
+            await fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            
+            status.innerHTML = "<span class='acierto-txt'>¡Datos guardados! Recargue para ver cambios.</span>";
+            setTimeout(() => location.reload(), 2000);
+        }
+
+        function renderizarTablas() {
+            document.getElementById('body-incidencias').innerHTML = db.incidencias.reverse().map(i => 
+                `<tr><td>${i.fecha}</td><td>${i.curso}</td><td>${i.estudiante}</td><td>${i.descripcion}</td></tr>`).join('');
+            
+            document.getElementById('body-reflexiones').innerHTML = db.reflexiones.reverse().map(r => 
+                `<tr><td>${r.fecha}</td><td>${r.contenido}</td></tr>`).join('');
+        }
+
+        function cambiarModo(modo, btn) {
+            document.getElementById('form-incidencia').classList.toggle('oculto', modo !== 'incidencia');
+            document.getElementById('form-reflexion').classList.toggle('oculto', modo !== 'reflexion');
+            actualizarBotones(btn);
+        }
+
+        function verConsulta(panel, btn) {
+            document.getElementById('panel-incidencias').classList.toggle('oculto', panel !== 'tabla-incidencias');
+            document.getElementById('panel-reflexiones').classList.toggle('oculto', panel !== 'tabla-reflexiones');
+            actualizarBotones(btn);
+        }
+
+        function actualizarBotones(btn) {
+            Array.from(btn.parentElement.children).forEach(b => b.classList.remove('activo'));
+            btn.classList.add('activo');
+        }
+
+        function filtrarTabla() {
+            const query = document.getElementById('busqueda').value.toLowerCase();
+            const filas = document.querySelectorAll('#body-incidencias tr');
+            filas.forEach(f => f.style.display = f.children[2].innerText.toLowerCase().includes(query) ? '' : 'none');
+        }
+
+        window.onload = inicializar;
+    </script>
+</body>
+</html>
