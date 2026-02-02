@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Calificaciones - Ing. Abreu</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="logo"><a href="#">Gestión Académica</a></div>
+    </div>
+</nav>
+
+<div class="container">
+    <h1>Consulta de Calificaciones por RA</h1>
+    <div class="metadata">Docente: Ing. Jorge Luis Abreu | República Dominicana</div>
+
+    <div class="content-box">
+        <div class="cv-section">
+            <div style="flex: 1;">
+                <label for="asignaturaSelect"><b>Asignatura y Curso:</b></label>
+                <select id="asignaturaSelect" class="cargar-div" style="width: 100%;">
+                    <option value="">-- Seleccionar --</option>
+                    <option value="Tecnologia Digital|4to C">Tecnología Digital - 4to C</option>
+                    <option value="DPWRM|4to B">DPWRM - 4to B</option>
+                    <option value="DDBD|4to B">DDBD - 4to B</option>
+                    <option value="DASI|5to B">DASI - 5to B</option>
+                    <option value="IMASI|6to B">IMASI - 6to B</option>
+                    <option value="Taller|3ro A">Taller - 3ro A</option>
+                    <option value="Taller|3ro B">Taller - 3ro B</option>
+                </select>
+            </div>
+            <div style="flex: 1;">
+                <label><b>Seleccionar Período:</b></label>
+                <div id="period-tabs" style="display: flex; gap: 8px; margin-top: 10px;">
+                    <button type="button" class="btn-periodo" onclick="consultar('P1')">P1</button>
+                    <button type="button" class="btn-periodo" onclick="consultar('P2')">P2</button>
+                    <button type="button" class="btn-periodo" onclick="consultar('P3')">P3</button>
+                    <button type="button" class="btn-periodo" onclick="consultar('P4')">P4</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultados-tabla-section">
+        <h2 id="titulo-reporte">Reporte Académico</h2>
+        <div class="table-responsive-container">
+            <table id="resultados-tabla" class="horario-clases">
+                <thead>
+                    <tr>
+                        <th>Estudiante</th>
+                        <th>RA</th>
+                        <th>Mínimo RA</th>
+                        <th>Nota</th>
+                        <th>REC</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body">
+                    <tr><td colspan="6">Cargando datos...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwuToYCtCxnhxaURPI_FJFahJ0ldeK0USsruwQgamiuRHeTY6Jx2PIuBIccAT-qSKCO/exec";
+    let baseDatos = [];
+
+    async function cargarDatos() {
+        try {
+            const response = await fetch(WEB_APP_URL);
+            baseDatos = await response.json();
+            document.getElementById('tabla-body').innerHTML = `<tr><td colspan="6">Base de datos sincronizada.</td></tr>`;
+        } catch (e) {
+            document.getElementById('tabla-body').innerHTML = `<tr><td colspan="6" style="color:red">Error de red.</td></tr>`;
+        }
+    }
+
+    function consultar(periodo) {
+        const seleccion = document.getElementById('asignaturaSelect').value;
+        if (!seleccion) return alert("Seleccione Asignatura");
+
+        const [materia, curso] = seleccion.split('|');
+        const tbody = document.getElementById('tabla-body');
+        tbody.innerHTML = "";
+        document.getElementById('titulo-reporte').innerText = `${materia} - ${curso} (${periodo})`;
+
+        const filtrados = baseDatos.filter(f => 
+            f.Asignatura.toString().trim().toUpperCase() === materia.toUpperCase() &&
+            f.Curso.toString().trim().toUpperCase() === curso.toUpperCase() &&
+            f.Periodo.toString().trim().toUpperCase() === periodo.toUpperCase() &&
+            f.Calificacion !== ""
+        );
+
+        if (filtrados.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='6'>No hay datos registrados.</td></tr>";
+            return;
+        }
+
+        filtrados.forEach(item => {
+            const tr = document.createElement('tr');
+            
+            // Valores numéricos
+            const nOriginal = parseFloat(item.Calificacion) || 0;
+            const nRec = item.CalificacionREC ? parseFloat(item.CalificacionREC) : null;
+            const nMinimo = parseFloat(item.MinimoRA) || 70; // Por defecto 70 si la celda está vacía
+            
+            // Lógica de calificación final
+            const nFinal = nRec !== null ? nRec : nOriginal;
+            const esAprobado = nFinal >= nMinimo;
+            
+            // Clases de su styles.css
+            const claseColor = esAprobado ? "acierto-txt" : "error-txt";
+            const raLabel = (item.RA === "N/A" || !item.RA) ? "General" : item.RA;
+
+            tr.innerHTML = `
+                <td>${item.Estudiante}</td>
+                <td>${raLabel}</td>
+                <td><b>${nMinimo}</b></td>
+                <td>${nOriginal}</td>
+                <td>${nRec || '-'}</td>
+                <td class="${claseColor}">${nFinal} ${esAprobado ? '✓' : '✗'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    cargarDatos();
+</script>
+
+<style>
+    .btn-periodo {
+        flex: 1;
+        padding: 10px;
+        background-color: #004d40;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .btn-periodo:hover { background-color: #00796b; }
+</style>
+
+</body>
+</html>
