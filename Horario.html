@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horario de Clases - Gestión Dinámica</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="icon/icon.png">
+    <style>
+        /* Ajustes para los nuevos controles de filtrado */
+        .controls-container {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ddd;
+        }
+        .controls-container select {
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-family: inherit;
+        }
+        .loading-overlay { text-align: center; padding: 40px; font-style: italic; color: #666; }
+        .vacio { color: #ccc; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="navbar-content">
+            <div class="logo"><a href="index.html">J. L. Abreu | Portafolio Docente</a></div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Inicio</a></li>
+                    <li class="dropdown">
+                        <a href="#">Módulos</a>
+                        <ul class="submenu">
+                            <li><a href="DDBD.html">DDBD</a></li>
+                            <li><a href="DPWRM.html">DPWRM</a></li>
+                            <li><a href="TecDig.html">Tec.Dig</a></li>
+                            <li><a href="DASI.html">DASI</a></li>
+                            <li><a href="IMASI.html">IMASI</a></li>
+                            <li><a href="Talleres.html">Talleres</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#">Herramientas</a>
+                        <ul class="submenu">
+                            <li><a href="Horario.html">Horario</a></li>
+                            <li><a href="gestion_actividad.html">Actividades</a></li>
+                            <li><a href="ruleta.html">Ruleta</a></li>
+                            <li><a href="Preguntas.html">Ruleta de Preguntas</a></li>
+                            <li><a href="Planificacion-Diaria.html">Planificación Diaria</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="cv_soporte.html">CV/Soporte</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>Horario Semanal de Clases</h1>
+        
+        <div class="controls-container">
+            <div>
+                <label><strong>Filtrar por:</strong></label>
+                <select id="filterType" onchange="updateFilterOptions()">
+                    <option value="Profesor">Profesor</option>
+                    <option value="Curso">Curso</option>
+                </select>
+            </div>
+            <div>
+                <label><strong>Seleccionar:</strong></label>
+                <select id="filterValue" onchange="renderHorario()">
+                    <option>Cargando datos...</option>
+                </select>
+            </div>
+        </div>
+
+        <p id="metadata" class="metadata">Conectando con base de datos...</p>
+        
+        <div id="countdown-banner" class="countdown-banner">
+            Sincronizando con Google Sheets...
+        </div>
+
+        <div class="table-responsive-container" id="tabla-dinamica">
+            <div class="loading-overlay">Obteniendo información desde la hoja de cálculo...</div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Jorge Luis Abreu, M.A. - Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        // 1. CONFIGURACIÓN: Pegue aquí la URL de su Google Apps Script
+        const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbzm5zH70gvzzQBNtlqz5wYvm4fanpWVgoeMgnzFzljvwwXQkC5wE25qaE-bZyKbn4qH/exec";
+
+        let dbHorarios = [];
+        const diasSemana = ["Lun", "Mar", "Mi", "Jue", "Vie"];
+        const periodosDef = [
+            { p: 1, time: "8:00-8:50" },
+            { p: 2, time: "8:50-9:40" },
+            { p: 3, time: "9:40-10:30" },
+            { p: 'R', time: "10:30-11:00", name: "Recreo" },
+            { p: 4, time: "11:00-11:45" },
+            { p: 5, time: "11:45-12:30" },
+            { p: 'A', time: "12:30-13:30", name: "Almuerzo" },
+            { p: 6, time: "13:30-14:20" },
+            { p: 7, time: "14:20-15:10" },
+            { p: 8, time: "15:10-16:00" }
+        ];
+
+        // Carga inicial
+        async function init() {
+            try {
+                const response = await fetch(SHEET_API_URL);
+                dbHorarios = await response.json();
+                updateMetadata();
+                updateFilterOptions();
+            } catch (e) {
+                document.getElementById('countdown-banner').innerHTML = "Error de conexión con la base de datos.";
+            }
+        }
+
+        function updateMetadata() {
+            const now = new Date();
+            document.getElementById('metadata').innerHTML = 
+                `Profesor: Jorge Luis Abreu, M.A. | Hoy: ${now.toLocaleDateString()} | Datos Sincronizados`;
+        }
+
+        function updateFilterOptions() {
+            const type = document.getElementById('filterType').value;
+            const select = document.getElementById('filterValue');
+            const unicos = [...new Set(dbHorarios.map(item => item[type]))].sort();
+            
+            select.innerHTML = unicos.map(v => `<option value="${v}">${v}</option>`).join('');
+            
+            // Seleccionar por defecto a Jorge Luis Abreu si existe
+            if(type === 'Profesor' && unicos.includes("Jorge Luis Abreu")) {
+                select.value = "Jorge Luis Abreu";
+            }
+            
+            renderHorario();
+        }
+
+        function renderHorario() {
+            const type = document.getElementById('filterType').value;
+            const value = document.getElementById('filterValue').value;
+            const container = document.getElementById('tabla-dinamica');
+
+            let html = `<table class="horario-clases">
+                <thead>
+                    <tr>
+                        <th>Día</th>
+                        ${periodosDef.map(p => `<th>${p.p}<br>${p.time}</th>`).join('')}
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            diasSemana.forEach(dia => {
+                html += `<tr><td class="dia"><b>${dia}</b></td>`;
+                
+                periodosDef.forEach(per => {
+                    // Manejo de Recreo y Almuerzo (Rowspan simulado por CSS o lógica de tabla)
+                    if(per.p === 'R') {
+                        if(dia === "Lun") html += `<td rowspan="5" class="recreo">Recreo</td>`;
+                        return;
+                    }
+                    if(per.p === 'A') {
+                        if(dia === "Lun") html += `<td rowspan="5" class="almuerzo">Almuerzo</td>`;
+                        return;
+                    }
+
+                    // Buscar coincidencia en la "Base de Datos" de la hoja
+                    const clase = dbHorarios.find(h => h.Dia === dia && h.Periodo == per.p && h[type] === value);
+                    
+                    if(clase) {
+                        // Aplicar clase CSS según asignatura para mantener colores (ej: desarrollo-app, diseno-bd)
+                        const cssClase = asignarClaseCSS(clase.Asignatura);
+                        html += `<td class="clase ${cssClase}">
+                                    ${clase.Asignatura}<br>
+                                    <span class="grupo">${type === 'Profesor' ? clase.Curso : clase.Profesor}</span>
+                                 </td>`;
+                    } else {
+                        html += `<td class="vacio">-</td>`;
+                    }
+                });
+                html += `</tr>`;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+            document.getElementById('countdown-banner').innerHTML = `Mostrando horario de: <strong>${value}</strong>`;
+        }
+
+        function asignarClaseCSS(asignatura) {
+            // Mapeo simple para mantener sus colores originales
+            const map = {
+                'DASI': 'desarrollo-app',
+                'DDBD': 'diseno-bd',
+                'DPWRM': 'diseno-web',
+                'Tec. Dig': 'tec-dig',
+                'IMASI': 'imadsi',
+                'Taller': 'taller'
+            };
+            return map[asignatura] || 'Pedagogica';
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
