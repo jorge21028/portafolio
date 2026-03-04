@@ -62,13 +62,32 @@ calcularTiempoRestante();
 
 // Audio
 const audio = new Audio("Musica.mp3");
-audio.loop = true;
-audio.volume = 0.5;
+audio.loop = true;           // Repetición infinita
+audio.volume = 0.5;          // Ajuste de volumen
+audio.preload = "auto";
 
-audio.play().catch(()=>{
-    document.body.addEventListener("click",()=>{
-        audio.play();
-    },{once:true});
+// Intentar reproducción automática
+function iniciarAudio() {
+    audio.play().then(() => {
+        console.log("Audio iniciado correctamente");
+    }).catch(() => {
+        console.log("Autoplay bloqueado, esperando interacción...");
+    });
+}
+
+// Intentar al cargar
+window.addEventListener("load", iniciarAudio);
+
+// Si el navegador bloquea autoplay, se activa con el primer clic
+document.addEventListener("click", function activarAudioUnaVez(){
+    audio.play();
+    document.removeEventListener("click", activarAudioUnaVez);
+});
+
+// Seguridad extra: si por alguna razón se detiene, vuelve a iniciar
+audio.addEventListener("ended", () => {
+    audio.currentTime = 0;
+    audio.play();
 });
 
 // Pantalla completa
@@ -88,4 +107,5 @@ document.addEventListener("fullscreenchange",()=>{
     }else{
         btnFull.style.display="block";
     }
+
 });
