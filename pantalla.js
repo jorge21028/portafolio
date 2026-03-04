@@ -61,7 +61,7 @@ setInterval(calcularTiempoRestante,1000);
 calcularTiempoRestante();
 
 // Audio
-const audio = new Audio("/Recursos/Musica.mp3");
+const audio = new Audio("Recursos/Musica.mp3");
 audio.loop = true;           // Repetición infinita
 audio.volume = 0.5;          // Ajuste de volumen
 audio.preload = "auto";
@@ -109,4 +109,5 @@ document.addEventListener("fullscreenchange",()=>{
     }
 
 });
+
 
