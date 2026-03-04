@@ -34,7 +34,7 @@ body::before {
 }
 
 .card{
-    width:800px;
+    width:850px;
     padding:70px 60px;
     border-radius:30px;
     text-align:center;
@@ -77,6 +77,32 @@ h2{
     text-shadow:0 0 20px rgba(255,179,0,0.9);
 }
 
+/* QR */
+
+.qr-container{
+    margin-top:40px;
+    padding-top:25px;
+    border-top:1px solid rgba(255,255,255,0.15);
+}
+
+.qr-container p{
+    font-size:1em;
+    margin-bottom:15px;
+    letter-spacing:1px;
+    color:rgba(255,255,255,0.8);
+}
+
+.qr-img{
+    width:140px;
+    height:140px;
+    border-radius:12px;
+    background:white;
+    padding:10px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.6);
+}
+
+/* Botón pantalla completa */
+
 .full-btn{
     position:fixed;
     bottom:20px;
@@ -87,6 +113,11 @@ h2{
     border-radius:8px;
     font-weight:bold;
     cursor:pointer;
+    transition:0.3s;
+}
+
+.full-btn:hover{
+    background:#ffaa00;
 }
 </style>
 
@@ -96,15 +127,25 @@ h2{
 
 <div class="card">
     <img id="logo" class="logo">
-	<h2 id="centro"></h2><br>
-    <h1 id="asignatura"></h1><br>
-    <h2 id="profesor"></h2><br>
+    
+    <h2 id="centro"></h2>
+    <h1 id="asignatura"></h1>
+    <h2 id="profesor"></h2>
+    
     <div class="hora" id="hora"></div>
     <div id="cronometro"></div>
+
+    <!-- QR -->
+    <div class="qr-container">
+        <p>Escanea el código QR para conocer más sobre el profesor</p>
+        <img src="icon/qr.png" alt="Código QR del profesor" class="qr-img">
+    </div>
+
 </div>
 
 <button id="btnFull" class="full-btn">Pantalla Completa</button>
 
 <script src="pantalla.js"></script>
+
 </body>
 </html>
