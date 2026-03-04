@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Iniciar Clase</title>
+
+<style>
+body{
+    font-family:Segoe UI, sans-serif;
+    background:linear-gradient(135deg,#00332b,#004d40);
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:0;
+    color:white;
+}
+
+.form-container{
+    background:rgba(255,255,255,0.1);
+    padding:40px;
+    border-radius:20px;
+    backdrop-filter:blur(15px);
+    box-shadow:0 20px 50px rgba(0,0,0,0.6);
+    width:400px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-bottom:15px;
+    border-radius:8px;
+    border:none;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    font-weight:bold;
+    cursor:pointer;
+    background:#ffb300;
+}
+button:hover{
+    background:#ffa000;
+}
+</style>
+</head>
+
+<body>
+
+<div class="form-container">
+    <h2>Datos de la Clase</h2>
+	
+	<input 
+    type="text" 
+    id="centro" 
+    value="Unversidad Agroforestal Fernando Arturo de Meriño" 
+    placeholder="Nombre del centro educativo" 
+    required>
+
+<input 
+    type="text" 
+    id="profesor" 
+    value="Jorge Luis Abreu Rodríguez, M.A." 
+    placeholder="Nombre del Profesor" 
+    required>
+	
+    <input type="text" id="asignatura" placeholder="Asignatura" required>
+    <input type="time" id="horaInicio" required>
+
+    <label>Seleccionar Logo:</label>
+    <input type="file" id="logoInput" accept="image/*">
+
+    <button onclick="abrirPantalla()">Iniciar Pantalla</button>
+</div>
+
+<script>
+let logoBase64 = "";
+
+document.getElementById("logoInput").addEventListener("change", function(e){
+    const file = e.target.files[0];
+    if(!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event){
+        logoBase64 = event.target.result;
+    };
+    reader.readAsDataURL(file);
+});
+
+function abrirPantalla(){
+
+    const datos = {
+        profesor: document.getElementById("profesor").value,
+		centro: document.getElementById("centro").value,
+        asignatura: document.getElementById("asignatura").value,
+        horaInicio: document.getElementById("horaInicio").value,
+        logo: logoBase64
+    };
+
+    localStorage.setItem("datosClase", JSON.stringify(datos));
+
+    window.open("pantalla.html","_blank","width=1200,height=800");
+}
+</script>
+
+</body>
+</html>

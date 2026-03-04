@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Clase en Inicio</title>
+
+<style>
+body {
+    margin:0;
+    font-family:'Segoe UI', sans-serif;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    overflow:hidden;
+    color:white;
+
+    background:
+        radial-gradient(circle at 15% 25%, rgba(255,179,0,0.15), transparent 40%),
+        radial-gradient(circle at 85% 75%, rgba(255,255,255,0.05), transparent 40%),
+        linear-gradient(135deg, #001f1a, #00332b 40%, #004d40);
+}
+
+body::before {
+    content:"";
+    position:absolute;
+    width:100%;
+    height:100%;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size:50px 50px;
+    pointer-events:none;
+}
+
+.card{
+    width:800px;
+    padding:70px 60px;
+    border-radius:30px;
+    text-align:center;
+
+    background:linear-gradient(145deg,rgba(255,255,255,0.12),rgba(255,255,255,0.05));
+    backdrop-filter:blur(20px);
+
+    box-shadow:0 25px 80px rgba(0,0,0,0.7),
+               inset 0 0 0 1px rgba(255,255,255,0.15);
+}
+
+.logo{
+    max-width:180px;
+    margin-bottom:35px;
+}
+
+h1{
+    font-size:3em;
+    margin:10px 0;
+}
+
+h2{
+    font-size:1.6em;
+    font-weight:400;
+    margin:10px 0 25px 0;
+}
+
+.hora{
+    font-size:1.3em;
+    margin-bottom:30px;
+    color:#ff4444;
+    font-weight:600;
+    letter-spacing:1px;
+}
+
+#cronometro{
+    font-size:6em;
+    font-weight:700;
+    color:#ffb300;
+    text-shadow:0 0 20px rgba(255,179,0,0.9);
+}
+
+.full-btn{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#ffb300;
+    border:none;
+    padding:12px 25px;
+    border-radius:8px;
+    font-weight:bold;
+    cursor:pointer;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+    <img id="logo" class="logo">
+	<h2 id="centro"></h2><br>
+    <h1 id="asignatura"></h1><br>
+    <h2 id="profesor"></h2><br>
+    <div class="hora" id="hora"></div>
+    <div id="cronometro"></div>
+</div>
+
+<button id="btnFull" class="full-btn">Pantalla Completa</button>
+
+<script src="pantalla.js"></script>
+</body>
+</html>
