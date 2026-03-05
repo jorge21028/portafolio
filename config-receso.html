@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Configuración Receso</title>
+
+<style>
+
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:'Segoe UI', sans-serif;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:white;
+}
+
+.container{
+    width:500px;
+    padding:40px;
+    border-radius:20px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(15px);
+    box-shadow:0 20px 60px rgba(0,0,0,0.7);
+}
+
+h1{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-bottom:20px;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    background:#ffb300;
+}
+
+button:hover{
+    opacity:0.9;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Configuración de Receso</h1>
+
+    <input type="number" id="tiempo" value="15" placeholder="Tiempo de receso (minutos)">
+	
+    <input type="text" id="centro" value="Unversidad Agroforestal Fernando Arturo de Meriño" 
+    placeholder="Nombre del centro educativo" 
+    required>
+	
+    <input type="text" id="profesor" value="Jorge Luis Abreu Rodríguez, M.A." 
+    placeholder="Nombre del Profesor" 
+    required>
+    <input type="file" id="logo" accept="image/*">
+
+    <button onclick="guardarDatos()">Iniciar Receso</button>
+</div>
+
+<script>
+
+function guardarDatos(){
+
+    const tiempo = document.getElementById("tiempo").value;
+    const centro = document.getElementById("centro").value;
+    const profesor = document.getElementById("profesor").value;
+    const logoInput = document.getElementById("logo");
+
+    if(!tiempo || !centro || !profesor){
+        alert("Complete todos los campos.");
+        return;
+    }
+
+    localStorage.setItem("tiempoReceso", tiempo);
+    localStorage.setItem("nombreCentro", centro);
+    localStorage.setItem("nombreProfesor", profesor);
+
+    const reader = new FileReader();
+    reader.onload = function(e){
+        localStorage.setItem("logoCentro", e.target.result);
+        window.location.href = "receso.html";
+    }
+
+    if(logoInput.files[0]){
+        reader.readAsDataURL(logoInput.files[0]);
+    } else {
+        localStorage.setItem("logoCentro", "");
+        window.location.href = "receso.html";
+    }
+}
+
+</script>
+
+</body>
+</html>

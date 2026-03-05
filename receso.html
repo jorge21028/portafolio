@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Receso</title>
+
+<style>
+
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:'Segoe UI', sans-serif;
+    background:linear-gradient(135deg,#1e3c72,#2a5298);
+    color:white;
+}
+
+.card{
+    width:1000px;
+    padding:80px;
+    border-radius:30px;
+    text-align:center;
+    background:rgba(0,0,0,0.5);
+    backdrop-filter:blur(20px);
+    box-shadow:0 40px 120px rgba(0,0,0,0.8);
+}
+
+.logo{
+    width:120px;
+    margin-bottom:20px;
+}
+
+h1{
+    font-size:3em;
+    margin:10px 0;
+}
+
+h2{
+    margin:5px 0 30px 0;
+    font-weight:300;
+}
+
+#cronometro{
+    font-size:8em;
+    font-weight:900;
+    margin:30px 0;
+}
+
+.footer{
+    margin-top:40px;
+    opacity:0.8;
+}
+
+button{
+    margin-top:30px;
+    padding:10px 20px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+<audio id="musicaFondo" loop>
+    <source src="Recursos/Musica.mp3" type="audio/mpeg">
+</audio>
+
+<div class="card">
+    <img id="logo" class="logo">
+    <h2 id="centro"></h2>
+    <h1>RECESO</h1>
+	 <h3>Regresamos en:</h3>
+    <div id="cronometro">00:00</div>
+    <div class="footer" id="profesor"></div>
+</div>
+
+<script>
+
+const tiempo = localStorage.getItem("tiempoReceso");
+const centro = localStorage.getItem("nombreCentro");
+const profesor = localStorage.getItem("nombreProfesor");
+const logo = localStorage.getItem("logoCentro");
+
+document.getElementById("centro").textContent = centro;
+document.getElementById("profesor").textContent = "Profesor: " + profesor;
+
+if(logo){
+    document.getElementById("logo").src = logo;
+}
+
+let tiempoRestante = tiempo * 60;
+
+function actualizar(){
+    let min = Math.floor(tiempoRestante/60);
+    let seg = tiempoRestante%60;
+
+    document.getElementById("cronometro").textContent =
+        String(min).padStart(2,'0') + ":" +
+        String(seg).padStart(2,'0');
+
+    if(tiempoRestante > 0){
+        tiempoRestante--;
+    } else {
+        document.getElementById("cronometro").textContent = "00:00";
+    }
+}
+
+setInterval(actualizar,1000);
+actualizar();
+
+function volver(){
+    window.location.href = "config-receso.html";
+}
+window.onload = function(){
+    const musica = document.getElementById("musicaFondo");
+    musica.volume = 0.4; // volumen moderado
+    musica.play().catch(() => {
+        document.addEventListener("click", () => musica.play(), { once: true });
+    });
+}
+</script>
+
+</body>
+</html>
