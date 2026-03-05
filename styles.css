@@ -940,3 +940,72 @@ button {
     padding: 140px 5% 60px 5%;
 }
 
+/* ===============================
+   SECCIÓN HERRAMIENTAS PROFESIONAL
+=================================*/
+
+.herramientas-section {
+    padding: 140px 5% 80px 5%;
+    background: #f8f9fa;
+}
+
+.herramientas-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.herramientas-header h1 {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 15px;
+}
+
+.herramientas-header p {
+    color: #666;
+    max-width: 600px;
+    margin: auto;
+}
+
+.herramientas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.herramienta-categoria {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    border-top: 6px solid var(--primary);
+    transition: all 0.3s ease;
+}
+
+.herramienta-categoria:hover {
+    transform: translateY(-8px);
+    border-top: 6px solid var(--accent);
+}
+
+.herramienta-categoria h2 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: var(--primary);
+}
+
+.herramienta-item {
+    display: block;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    background: #f1f3f5;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.herramienta-item:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateX(5px);
+}
