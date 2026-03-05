@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Generador de Equipos | J. L. Abreu</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- MENÚ -->
+<div id="menu-container"></div>
+
+<section class="contenedor-herramienta">
+
+    <div class="herramienta-header">
+        <h1>Generador Automático de Equipos</h1>
+        <p>Organiza equipos de trabajo de manera equilibrada y aleatoria.</p>
+    </div>
+
+    <div class="card herramienta-card">
+
+        <label><strong>Lista de estudiantes (uno por línea)</strong></label>
+        <textarea id="lista" class="input-area"></textarea>
+
+        <div class="controls-row">
+            <div>
+                <label><strong>Número de equipos</strong></label>
+                <input type="number" id="numEquipos" min="2" value="3">
+            </div>
+
+            <div class="botones">
+                <button onclick="generarEquipos()" class="btn-primary">Generar</button>
+                <button onclick="copiarResultado()" class="btn-secondary">Copiar</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="resultado" class="modern-grid"></div>
+
+</section>
+
+<script src="menu.js"></script>
+
+<script>
+
+function generarEquipos(){
+
+    let nombres = document.getElementById("lista").value
+        .split("\n")
+        .map(n => n.trim())
+        .filter(n => n !== "");
+
+    let numEquipos = parseInt(document.getElementById("numEquipos").value);
+
+    if(nombres.length === 0){
+        alert("Debe ingresar estudiantes.");
+        return;
+    }
+
+    nombres.sort(() => Math.random() - 0.5);
+
+    let equipos = Array.from({length: numEquipos}, () => []);
+
+    nombres.forEach((nombre, index) => {
+        equipos[index % numEquipos].push(nombre);
+    });
+
+    mostrarEquipos(equipos);
+}
+
+function mostrarEquipos(equipos){
+    let contenedor = document.getElementById("resultado");
+    contenedor.innerHTML = "";
+
+    equipos.forEach((equipo, index) => {
+
+        let div = document.createElement("div");
+        div.className = "card";
+
+        let html = `<h3 style="color: var(--primary);">Equipo ${index+1}</h3><ul>`;
+
+        equipo.forEach(est => {
+            html += `<li>${est}</li>`;
+        });
+
+        html += "</ul>";
+
+        div.innerHTML = html;
+        contenedor.appendChild(div);
+    });
+}
+
+function copiarResultado(){
+    let texto = "";
+    document.querySelectorAll("#resultado .card").forEach((equipo) => {
+        texto += equipo.innerText + "\n\n";
+    });
+
+    navigator.clipboard.writeText(texto);
+    alert("Equipos copiados al portapapeles.");
+}
+
+</script>
+
+</body>
+</html>
