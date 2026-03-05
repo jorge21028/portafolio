@@ -935,3 +935,8 @@ button {
     background-color: #c82333;
 }
 
+/* Espacio superior real debajo del navbar */
+.contenedor-herramientas {
+    padding: 140px 5% 60px 5%;
+}
+
