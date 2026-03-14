@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notas - Prof. Jorge Abreu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="stylenotas.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Mis Notas</h2>
+                <p>Prof. Jorge Abreu</p>
+            </div>
+            
+            <div class="stats">
+                Total de notas: <span id="count">0</span>
+            </div>
+
+            <nav id="categories">
+                <p class="nav-label">Categorías</p>
+                <button onclick="app.filterByCategory('Todas')" class="active">Todas</button>
+                <button onclick="app.filterByCategory('Trabajo')">Trabajo</button>
+                <button onclick="app.filterByCategory('Personal')">Personal</button>
+            </nav>
+        </aside>
+
+        <main>
+            <header>
+                <div class="search-wrapper">
+                    <input type="text" id="search" placeholder="Buscar por título o #etiqueta..." oninput="app.search(this.value)">
+                </div>
+                <button class="btn-primary" onclick="ui.showModal()">+ Nueva Nota</button>
+            </header>
+
+            <div id="notesGrid" class="notes-grid"></div>
+        </main>
+    </div>
+
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <h3>Gestionar Nota</h3>
+            <input type="text" id="noteTitle" placeholder="Título de la nota">
+            
+            <div class="form-row">
+                <select id="noteCategory">
+                    <option value="Personal">Personal</option>
+                    <option value="Trabajo">Trabajo</option>
+                </select>
+                <input type="text" id="noteTags" placeholder="Etiquetas (ej: examen, pago)">
+            </div>
+
+            <textarea id="noteContent" placeholder="Escribe el contenido aquí..."></textarea>
+            
+            <div class="options-row">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="notePinned"> Fijar nota
+                </label>
+                <label class="checkbox-container">
+                    <input type="checkbox" id="noteIsCheck"> Es Checklist
+                </label>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="ui.hideModal()">Cancelar</button>
+                <button class="btn-primary" onclick="app.saveNote()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="scriptnotas.js"></script>
+</body>
+</html>
