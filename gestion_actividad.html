@@ -242,8 +242,27 @@
 
         <div class="config-area">
             <h2>Datos de la Actividad</h2>
-            <label for="grupoNombre">Grupo / Asignatura:</label>
-            <input type="text" id="grupoNombre" value="Diseño y Desarrollo de Base de Datos">
+   <label>Grupo / Asignatura:</label>
+    <select id="gradoSeccion" required onchange="handleSelectChange()">
+        <option value="">Seleccionar...</option>
+        <option value="3ro A - Taller Ofimática">Taller 3ro A</option>
+        <option value="3ro B - Taller Ofimática">Taller 3ro B</option>
+        <option value="4to B - Diseño y Desarrollo de Base de Datos">DDBD</option>
+        <option value="4to B - Diseño de Portales Web y Recursos Multimedia">DPWRM</option>
+        <option value="4to C - Tecnologías Digitales">Tec.Dig</option>
+        <option value="5to B - Diseño de Aplicaciones y Sistemas de Información">DASI</option>
+        <option value="6to B - Implementación y Mantenimiento de Sistemas Informáticos">DASI</option>
+        <option value="otros">Otros</option>
+    </select>
+
+    <!-- Campo oculto -->
+    <div id="otroCampo" style="display:none; margin-top:10px;">
+        <label>Especificar:</label>
+        <input type="text" id="otroTexto" placeholder="Escriba aquí...">
+    </div>
+
+    <br><br>
+    <button onclick="obtenerValor()">Enviar</button>
             
             <label for="tituloActividad">Título de la Actividad:</label>
             <input type="text" id="tituloActividad" value="Práctica de Normalización">
@@ -636,6 +655,37 @@ body {
 
         // Inicializar
         setTimer();
+
+         function handleSelectChange() {
+            mostrarOtroCampo();
+            updateModulos(); // Mantiene tu función original
+        }
+
+        function mostrarOtroCampo() {
+            const select = document.getElementById("gradoSeccion");
+            const otroCampo = document.getElementById("otroCampo");
+
+            if (select.value === "otros") {
+                otroCampo.style.display = "block";
+            } else {
+                otroCampo.style.display = "none";
+            }
+        }
+
+        // Simulación de tu función existente (puedes eliminar esto si ya la tienes)
+        function updateModulos() {
+            console.log("Actualizando módulos...");
+        }
+
+        function obtenerValor() {
+            let valor = document.getElementById("gradoSeccion").value;
+
+            if (valor === "otros") {
+                valor = document.getElementById("otroTexto").value;
+            }
+
+            alert("Valor seleccionado: " + valor);
+        }
     </script>
 </body>
 </html>
