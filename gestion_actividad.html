@@ -262,8 +262,7 @@
     </div>
 
     <br><br>
-    <button onclick="obtenerValor()">Enviar</button>
-            
+          
             <label for="tituloActividad">Título de la Actividad:</label>
             <input type="text" id="tituloActividad" value="Práctica de Normalización">
             
@@ -670,21 +669,6 @@ body {
             } else {
                 otroCampo.style.display = "none";
             }
-        }
-
-        // Simulación de tu función existente (puedes eliminar esto si ya la tienes)
-        function updateModulos() {
-            console.log("Actualizando módulos...");
-        }
-
-        function obtenerValor() {
-            let valor = document.getElementById("gradoSeccion").value;
-
-            if (valor === "otros") {
-                valor = document.getElementById("otroTexto").value;
-            }
-
-            alert("Valor seleccionado: " + valor);
         }
     </script>
 </body>
