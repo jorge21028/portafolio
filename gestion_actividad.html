@@ -244,6 +244,19 @@
             <h2>Datos de la Actividad</h2>
             <label for="grupoNombre">Grupo / Asignatura:</label>
             <input type="text" id="grupoNombre" value="Diseño y Desarrollo de Base de Datos">
+ <select id="opciones" name="opciones" onchange="mostrarOtro()">
+  <option value="">-- Seleccione --</option>
+  <option value="opcion1">Taller 3ro A</option>
+  <option value="opcion2">Taller 3ro B</option>
+  <option value="opcion3">Tecnología Digital 4to C</option>
+  <option value="opcion4">Diseño y Desarrollo de Base de Datos 4to B</option>   
+<option value="opcion5">Diseño de Portales Web y Recursos Multimedia 4to B</option>  
+ <option value="opcion6">Diseño deAplicaciones y SIstemas Informáticos 5to B</option>   
+  <option value="opcion7">Implementacion y Mantenimiento de Sistemas de Información 6to B</option>   
+  <option value="otro">Otro</option>
+</select>
+            <input type="text" id="otroInput" name="otroInput" placeholder="Especifique..." style="display:none;">
+
             
             <label for="tituloActividad">Título de la Actividad:</label>
             <input type="text" id="tituloActividad" value="Práctica de Normalización">
@@ -636,6 +649,18 @@ body {
 
         // Inicializar
         setTimer();
+
+        function mostrarOtro() {
+  var select = document.getElementById("opciones");
+  var input = document.getElementById("otroInput");
+
+  if (select.value === "otro") {
+    input.style.display = "block";
+  } else {
+    input.style.display = "none";
+    input.value = "";
+  }
+}
     </script>
 </body>
 </html>
