@@ -319,6 +319,13 @@
         const showPopupBtn = document.getElementById('showPopupButton');
         const windowStatus = document.getElementById('windowStatus');
 
+        function obtenerGrupo() {
+    if (grupoInput.value === "otro") {
+        return document.getElementById("otroInput").value || "Otro";
+    }
+    return grupoInput.value;
+}
+
         // Funciones del temporizador
         function formatTime(seconds) {
             const h = Math.floor(seconds / 3600);
@@ -399,7 +406,7 @@
 
         function downloadActivityInfo() {
             // 1. Obtener los valores
-            const grupo = grupoInput.value;
+            const grupo = obtenerGrupo();
             const titulo = tituloInput.value;
             const descripcion = actividadInput.value;
             const puntos = puntosInput.value;
@@ -447,7 +454,7 @@
 const puntosEl = popupWindow.document.getElementById('popupPuntos');
 const objetivoEl = popupWindow.document.getElementById('popupObjetivo');
 
-if (grupoEl) grupoEl.textContent = grupoInput.value;
+if (grupoEl) grupoEl.textContent = obtenerGrupo();
 if (tituloEl) tituloEl.textContent = tituloInput.value;
 if (actividadEl) actividadEl.textContent = actividadInput.value;
 if (puntosEl) puntosEl.textContent = puntosInput.value;
@@ -566,7 +573,7 @@ body {
 <body>
     <div class="popup-content">
         <div class="header-info">
-            <span id="popupGrupo">${grupoInput.value}</span>
+            <span id="popupGrupo">${obtenerGrupo()}</span>
             <span id="popupTitulo">${tituloInput.value}</span>
         </div>
         
