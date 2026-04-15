@@ -353,35 +353,47 @@
             }
         }
 
-        function startTimer() {
-            if (remainingSeconds <= 0) {
-                alert('Por favor, establece un tiempo primero.');
-                return;
-            }
-            if (!isRunning) {
-                isRunning = true;
-                updateStatus('▶️ En curso', '#28a745');
-                timerInterval = setInterval(() => {
-                    if (remainingSeconds > 0) {
-                        remainingSeconds--;
-                        updateDisplay();
-                    } else {
-                        clearInterval(timerInterval);
-                        isRunning = false;
-                        updateStatus('⏰ ¡Tiempo terminado!', '#dc3545');
-                        alert('¡El tiempo ha terminado!');
-                    }
-                }, 1000);
-            }
-        }
+       function startTimer() {
+    if (remainingSeconds <= 0) {
+        alert('Por favor, establece un tiempo primero.');
+        return;
+    }
 
-        function pauseTimer() {
-            if (isRunning) {
+    if (!isRunning) {
+        isRunning = true;
+
+        // Calcular el momento exacto en que debe terminar
+        endTime = Date.now() + (remainingSeconds * 1000);
+
+        updateStatus('▶️ En curso', '#28a745');
+
+        timerInterval = setInterval(() => {
+            const now = Date.now();
+            remainingSeconds = Math.max(0, Math.floor((endTime - now) / 1000));
+
+            updateDisplay();
+
+            if (remainingSeconds <= 0) {
                 clearInterval(timerInterval);
                 isRunning = false;
-                updateStatus('⏸️ Pausado', '#ffc107');
+                updateStatus('⏰ ¡Tiempo terminado!', '#dc3545');
+                alert('¡El tiempo ha terminado!');
             }
-        }
+        }, 500); // más preciso que 1000
+    }
+}
+
+function pauseTimer() {
+    if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+
+        // recalcular el tiempo restante correctamente
+        remainingSeconds = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+
+        updateStatus('⏸️ Pausado', '#ffc107');
+    }
+}
 
         function resetTimer() {
             clearInterval(timerInterval);
@@ -391,16 +403,20 @@
             updateStatus('⏹️ Detenido', '#dc3545');
         }
 
-        function setTimer() {
-            const minutes = parseInt(minutosInput.value) || 15;
-            totalSeconds = minutes * 60;
-            remainingSeconds = totalSeconds;
-            clearInterval(timerInterval);
-            isRunning = false;
-            updateDisplay();
-            updateActivityInfo();
-            updateStatus('⏹️ Configurado', '#6c757d');
-        }
+function setTimer() {
+    const minutes = parseInt(minutosInput.value) || 15;
+
+    totalSeconds = minutes * 60;
+    remainingSeconds = totalSeconds;
+    endTime = 0;
+
+    clearInterval(timerInterval);
+    isRunning = false;
+
+    updateDisplay();
+    updateActivityInfo();
+    updateStatus('⏹️ Configurado', '#6c757d');
+}
 
         // ... otras funciones del temporizador
 
