@@ -420,48 +420,120 @@ function setTimer() {
 
         // ... otras funciones del temporizador
 
-        function downloadActivityInfo() {
-            // 1. Obtener los valores
-            const grupo = obtenerGrupo();
-            const titulo = tituloInput.value;
-            const descripcion = actividadInput.value;
-            const puntos = puntosInput.value;
-            const objetivo = objetivoInput.value;
+function downloadActivityInfo() {
+    // 1. Obtención de datos usando los IDs exactos de su archivo
+    const datos = {
+        grupo: obtenerGrupo(),
+        titulo: document.getElementById('tituloActividad').value,
+        descripcion: document.getElementById('actividadDescripcion').value,
+        puntos: document.getElementById('puntosActividad').value,
+        objetivo: document.getElementById('objetivoActividad').value
+    };
 
-            // 2. Formatear el contenido del archivo
-            const content = `--- Información de la Actividad ---\n\n` +
-                            `Grupo / Asignatura: ${grupo}\n` +
-                            `Título de la Actividad: ${titulo}\n` +
-                            `Puntos: ${puntos}\n\n` +
-                            `Objetivo:\n${objetivo}\n\n` +
-                            `Descripción Detallada:\n${descripcion}\n\n` +
-                            `---------------------------------`;
-
-            // 3. Generar el nombre del archivo (Fecha y Título)
-            const date = new Date();
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const formattedDate = `${year}-${month}-${day}`;
-            // Sanitizar el título para el nombre del archivo
-            const sanitizedTitle = titulo.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_');
-            const filename = `${formattedDate}_${sanitizedTitle}_Actividad.txt`;
-
-            // 4. Crear un Blob (Objeto binario grande) con el contenido
-            const blob = new Blob([content], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-
-            // 5. Crear y simular el clic en un enlace
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a); // Limpiar el elemento temporal
-
-            // Liberar el objeto URL
-            URL.revokeObjectURL(url);
+    // 2. Construcción del contenido HTML (Se guarda como texto, no afecta su página)
+    const htmlContent = `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Actividad - ${datos.titulo}</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f8f9fa; 
+            color: #333; 
+            padding: 40px; 
+            line-height: 1.6;
+            -webkit-user-select: none; 
+            user-select: none; 
         }
+        .container { 
+            max-width: 800px; 
+            margin: auto; 
+            background: #fff; 
+            padding: 30px; 
+            border-radius: 8px; 
+            border: 1px solid #dee2e6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .header { border-bottom: 3px solid #667eea; margin-bottom: 20px; padding-bottom: 10px; }
+        h1 { color: #4a5568; margin: 0; font-size: 24px; }
+        .meta { color: #718096; font-size: 0.9em; margin-top: 5px; font-weight: bold; }
+        .section { margin-top: 25px; }
+        .label { 
+            display: inline-block;
+            background: #667eea; 
+            color: white; 
+            padding: 3px 12px; 
+            border-radius: 4px; 
+            font-size: 0.8em; 
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .content { 
+            background: #f7fafc; 
+            padding: 15px; 
+            border-radius: 6px; 
+            border-left: 4px solid #cbd5e0;
+            white-space: pre-wrap; 
+        }
+        @media print { body { background: white; padding: 0; } .container { box-shadow: none; border: none; } }
+    </style>
+    <script>
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's' || e.key === 'p')) e.preventDefault();
+        });
+    <\/script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>${datos.titulo}</h1>
+            <div class="meta">Asignatura: ${datos.grupo} | Puntuación: ${datos.puntos} puntos</div>
+        </div>
+
+        <div class="section">
+            <span class="label">Objetivo de la Actividad</span>
+            <div class="content">${datos.objetivo}</div>
+        </div>
+
+        <div class="section">
+            <span class="label">Instrucciones / Descripción</span>
+            <div class="content">${datos.descripcion}</div>
+        </div>
+
+        <div style="margin-top: 40px; text-align: center; font-size: 11px; color: #a0aec0; border-top: 1px solid #edf2f7; padding-top: 15px;">
+            Este documento es de carácter educativo y está protegido contra copia.
+        </div>
+    </div>
+</body>
+</html>`;
+
+    // 3. Configuración del nombre del archivo
+    const date = new Date();
+    const formattedDate = date.toISOString().split('T')[0];
+    const sanitizedTitle = datos.titulo.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+    const filename = `${formattedDate}_${sanitizedTitle}.html`;
+
+    // 4. Ejecución de la descarga (Aislado del DOM principal)
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    
+    document.body.appendChild(a);
+    a.click();
+    
+    // Limpieza
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 100);
+}
 
         // ... resto de funciones
 
