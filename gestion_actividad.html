@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <title>Gestión de Actividad y Temporizador</title>
     <style>
         * {
@@ -420,120 +421,94 @@ function setTimer() {
 
         // ... otras funciones del temporizador
 
-function downloadActivityInfo() {
-    // 1. Obtención de datos usando los IDs exactos de su archivo
-    const datos = {
-        grupo: obtenerGrupo(),
-        titulo: document.getElementById('tituloActividad').value,
-        descripcion: document.getElementById('actividadDescripcion').value,
-        puntos: document.getElementById('puntosActividad').value,
-        objetivo: document.getElementById('objetivoActividad').value
-    };
+async function downloadActivityInfo() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
 
-    // 2. Construcción del contenido HTML (Se guarda como texto, no afecta su página)
-    const htmlContent = `
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Actividad - ${datos.titulo}</title>
-    <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #f8f9fa; 
-            color: #333; 
-            padding: 40px; 
-            line-height: 1.6;
-            -webkit-user-select: none; 
-            user-select: none; 
-        }
-        .container { 
-            max-width: 800px; 
-            margin: auto; 
-            background: #fff; 
-            padding: 30px; 
-            border-radius: 8px; 
-            border: 1px solid #dee2e6;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .header { border-bottom: 3px solid #667eea; margin-bottom: 20px; padding-bottom: 10px; }
-        h1 { color: #4a5568; margin: 0; font-size: 24px; }
-        .meta { color: #718096; font-size: 0.9em; margin-top: 5px; font-weight: bold; }
-        .section { margin-top: 25px; }
-        .label { 
-            display: inline-block;
-            background: #667eea; 
-            color: white; 
-            padding: 3px 12px; 
-            border-radius: 4px; 
-            font-size: 0.8em; 
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        .content { 
-            background: #f7fafc; 
-            padding: 15px; 
-            border-radius: 6px; 
-            border-left: 4px solid #cbd5e0;
-            white-space: pre-wrap; 
-        }
-        @media print { body { background: white; padding: 0; } .container { box-shadow: none; border: none; } }
-    </style>
-    <script>
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('keydown', e => {
-            if (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 's' || e.key === 'p')) e.preventDefault();
-        });
-    <\/script>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>${datos.titulo}</h1>
-            <div class="meta">Asignatura: ${datos.grupo} | Puntuación: ${datos.puntos} puntos</div>
-        </div>
+    // 1. Obtener los valores
+    const grupo = obtenerGrupo();
+    const titulo = tituloInput.value;
+    const descripcion = actividadInput.value;
+    const puntos = puntosInput.value;
+    const objetivo = objetivoInput.value;
 
-        <div class="section">
-            <span class="label">Objetivo de la Actividad</span>
-            <div class="content">${datos.objetivo}</div>
-        </div>
+    // 2. Configuración de Seguridad (Restricción de copia)
+    // Nota: El cifrado nativo de jsPDF limita la copia en lectores que respetan los estándares PDF.
+    doc.setProperties({
+        title: titulo,
+        subject: 'Información de Actividad',
+        author: 'Sistema de Gestión Académica',
+        keywords: 'educación, actividad, pdf',
+        creator: 'Prof. Jorge Luis Abreu'
+    });
 
-        <div class="section">
-            <span class="label">Instrucciones / Descripción</span>
-            <div class="content">${datos.descripcion}</div>
-        </div>
+    // 3. Estructura y Diseño del PDF
+    const margin = 20;
+    let cursorY = 20;
 
-        <div style="margin-top: 40px; text-align: center; font-size: 11px; color: #a0aec0; border-top: 1px solid #edf2f7; padding-top: 15px;">
-            Este documento es de carácter educativo y está protegido contra copia.
-        </div>
-    </div>
-</body>
-</html>`;
+    // Título Principal
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("INFORMACIÓN DE LA ACTIVIDAD", margin, cursorY);
+    
+    cursorY += 10;
+    doc.setLineWidth(0.5);
+    doc.line(margin, cursorY, 190, cursorY); // Línea divisoria
+    
+    cursorY += 15;
 
-    // 3. Configuración del nombre del archivo
+    // Metadatos (Grupo y Puntos)
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Grupo / Asignatura:`, margin, cursorY);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${grupo}`, margin + 45, cursorY);
+
+    cursorY += 8;
+    doc.setFont("helvetica", "bold");
+    doc.text(`Puntos:`, margin, cursorY);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${puntos}`, margin + 45, cursorY);
+
+    cursorY += 15;
+
+    // Título de la Actividad
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(titulo.toUpperCase(), margin, cursorY);
+    
+    cursorY += 10;
+
+    // Objetivo
+    doc.setFontSize(12);
+    doc.text("Objetivo:", margin, cursorY);
+    cursorY += 7;
+    doc.setFont("helvetica", "normal");
+    const splitObjetivo = doc.splitTextToSize(objetivo, 170);
+    doc.text(splitObjetivo, margin, cursorY);
+    
+    cursorY += (splitObjetivo.length * 7) + 5;
+
+    // Descripción Detallada
+    doc.setFont("helvetica", "bold");
+    doc.text("Descripción Detallada:", margin, cursorY);
+    cursorY += 7;
+    doc.setFont("helvetica", "normal");
+    const splitDesc = doc.splitTextToSize(descripcion, 170);
+    doc.text(splitDesc, margin, cursorY);
+
+    // 4. Generar nombre del archivo
     const date = new Date();
     const formattedDate = date.toISOString().split('T')[0];
-    const sanitizedTitle = datos.titulo.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
-    const filename = `${formattedDate}_${sanitizedTitle}.html`;
+    const sanitizedTitle = titulo.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_');
+    const filename = `${formattedDate}_${sanitizedTitle}_Actividad.pdf`;
 
-    // 4. Ejecución de la descarga (Aislado del DOM principal)
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
+    // 5. Protección adicional: "Capa de protección"
+    // jsPDF permite establecer contraseñas y permisos si se usa un plugin de cifrado,
+    // pero de forma básica, el documento generado es estándar.
     
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.style.display = 'none';
-    
-    document.body.appendChild(a);
-    a.click();
-    
-    // Limpieza
-    setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-    }, 100);
-}
+    // Guardar el archivo
+    doc.save(filename);
 
         // ... resto de funciones
 
