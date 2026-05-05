@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <title>Gestión de Actividad y Temporizador</title>
     <style>
         * {
@@ -421,94 +420,48 @@ function setTimer() {
 
         // ... otras funciones del temporizador
 
-async function downloadActivityInfo() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+        function downloadActivityInfo() {
+            // 1. Obtener los valores
+            const grupo = obtenerGrupo();
+            const titulo = tituloInput.value;
+            const descripcion = actividadInput.value;
+            const puntos = puntosInput.value;
+            const objetivo = objetivoInput.value;
 
-    // 1. Obtener los valores
-    const grupo = obtenerGrupo();
-    const titulo = tituloInput.value;
-    const descripcion = actividadInput.value;
-    const puntos = puntosInput.value;
-    const objetivo = objetivoInput.value;
+            // 2. Formatear el contenido del archivo
+            const content = `--- Información de la Actividad ---\n\n` +
+                            `Grupo / Asignatura: ${grupo}\n` +
+                            `Título de la Actividad: ${titulo}\n` +
+                            `Puntos: ${puntos}\n\n` +
+                            `Objetivo:\n${objetivo}\n\n` +
+                            `Descripción Detallada:\n${descripcion}\n\n` +
+                            `---------------------------------`;
 
-    // 2. Configuración de Seguridad (Restricción de copia)
-    // Nota: El cifrado nativo de jsPDF limita la copia en lectores que respetan los estándares PDF.
-    doc.setProperties({
-        title: titulo,
-        subject: 'Información de Actividad',
-        author: 'Sistema de Gestión Académica',
-        keywords: 'educación, actividad, pdf',
-        creator: 'Prof. Jorge Luis Abreu'
-    });
+            // 3. Generar el nombre del archivo (Fecha y Título)
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+            // Sanitizar el título para el nombre del archivo
+            const sanitizedTitle = titulo.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_');
+            const filename = `${formattedDate}_${sanitizedTitle}_Actividad.txt`;
 
-    // 3. Estructura y Diseño del PDF
-    const margin = 20;
-    let cursorY = 20;
+            // 4. Crear un Blob (Objeto binario grande) con el contenido
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
 
-    // Título Principal
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("INFORMACIÓN DE LA ACTIVIDAD", margin, cursorY);
-    
-    cursorY += 10;
-    doc.setLineWidth(0.5);
-    doc.line(margin, cursorY, 190, cursorY); // Línea divisoria
-    
-    cursorY += 15;
+            // 5. Crear y simular el clic en un enlace
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a); // Limpiar el elemento temporal
 
-    // Metadatos (Grupo y Puntos)
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.text(`Grupo / Asignatura:`, margin, cursorY);
-    doc.setFont("helvetica", "normal");
-    doc.text(`${grupo}`, margin + 45, cursorY);
-
-    cursorY += 8;
-    doc.setFont("helvetica", "bold");
-    doc.text(`Puntos:`, margin, cursorY);
-    doc.setFont("helvetica", "normal");
-    doc.text(`${puntos}`, margin + 45, cursorY);
-
-    cursorY += 15;
-
-    // Título de la Actividad
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text(titulo.toUpperCase(), margin, cursorY);
-    
-    cursorY += 10;
-
-    // Objetivo
-    doc.setFontSize(12);
-    doc.text("Objetivo:", margin, cursorY);
-    cursorY += 7;
-    doc.setFont("helvetica", "normal");
-    const splitObjetivo = doc.splitTextToSize(objetivo, 170);
-    doc.text(splitObjetivo, margin, cursorY);
-    
-    cursorY += (splitObjetivo.length * 7) + 5;
-
-    // Descripción Detallada
-    doc.setFont("helvetica", "bold");
-    doc.text("Descripción Detallada:", margin, cursorY);
-    cursorY += 7;
-    doc.setFont("helvetica", "normal");
-    const splitDesc = doc.splitTextToSize(descripcion, 170);
-    doc.text(splitDesc, margin, cursorY);
-
-    // 4. Generar nombre del archivo
-    const date = new Date();
-    const formattedDate = date.toISOString().split('T')[0];
-    const sanitizedTitle = titulo.replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '_');
-    const filename = `${formattedDate}_${sanitizedTitle}_Actividad.pdf`;
-
-    // 5. Protección adicional: "Capa de protección"
-    // jsPDF permite establecer contraseñas y permisos si se usa un plugin de cifrado,
-    // pero de forma básica, el documento generado es estándar.
-    
-    // Guardar el archivo
-    doc.save(filename);
+            // Liberar el objeto URL
+            URL.revokeObjectURL(url);
+        }
 
         // ... resto de funciones
 
