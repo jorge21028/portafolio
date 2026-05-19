@@ -364,8 +364,8 @@
   const COLORS = ['var(--c1)', 'var(--c2)', 'var(--c3)'];
   const DEFAULTS = [
     { name: 'Apertura', min: 10 },
-    { name: 'Desarrollo', min: 35 },
-    { name: 'Cierre', min: 5 },
+    { name: 'Desarrollo', min: 30 },
+    { name: 'Cierre', min: 10 },
   ];
 
   let state = DEFAULTS.map((d, i) => ({
@@ -379,6 +379,8 @@
 
   let current = 0;       // índice del momento activo
   let intervalId = null;
+  let startTimestamp = null;   // Date.now() cuando se inició/reanudó el tick
+  let remainingAtStart = 0;    // remaining en el momento de iniciar/reanudar
 
   // ── Render inicial ──────────────────────────────────────────────────────────
   function renderCards() {
@@ -531,8 +533,9 @@
   function startMoment(i) {
     if (intervalId) { clearInterval(intervalId); intervalId = null; }
 
-    // Pausar el momento actual si está corriendo
+    // Si otro momento estaba corriendo, pausarlo y guardar su tiempo real
     if (current !== i && state[current].status === 'running') {
+      state[current].remaining = getRealRemaining(current);
       state[current].status = 'paused';
     }
     current = i;
@@ -540,21 +543,35 @@
     if (state[i].status === 'done') return;
     state[i].status = 'running';
 
-    intervalId = setInterval(tick, 1000);
+    // Guardar punto de arranque para cálculo de tiempo real
+    startTimestamp = Date.now();
+    remainingAtStart = state[i].remaining;
+
+    intervalId = setInterval(tick, 250); // tick frecuente pero tiempo real
     renderCards();
     showToast(`▶ ${state[i].name} iniciado`);
   }
 
   function pauseMoment(i) {
     if (state[i].status !== 'running') return;
+    // Guardar tiempo real antes de pausar
+    state[i].remaining = getRealRemaining(i);
     clearInterval(intervalId); intervalId = null;
+    startTimestamp = null;
     state[i].status = 'paused';
     renderCards();
     showToast(`⏸ ${state[i].name} pausado`);
   }
 
+  // Calcula el tiempo restante real usando Date.now()
+  function getRealRemaining(i) {
+    if (state[i].status !== 'running' || startTimestamp === null) return state[i].remaining;
+    const elapsed = Math.floor((Date.now() - startTimestamp) / 1000);
+    return Math.max(0, remainingAtStart - elapsed);
+  }
+
   function resetMoment(i) {
-    if (current === i && intervalId) { clearInterval(intervalId); intervalId = null; }
+    if (current === i && intervalId) { clearInterval(intervalId); intervalId = null; startTimestamp = null; }
     state[i].remaining = state[i].totalSecs;
     state[i].status = 'idle';
     renderCards();
@@ -563,10 +580,9 @@
   function globalStart() {
     const s = state[current];
     if (s.status === 'running') {
-      // Avanzar al siguiente
       const next = current + 1;
       if (next < state.length) {
-        clearInterval(intervalId); intervalId = null;
+        clearInterval(intervalId); intervalId = null; startTimestamp = null;
         state[current].status = 'done';
         state[current].remaining = 0;
         startMoment(next);
@@ -584,7 +600,7 @@
   }
 
   function globalReset() {
-    clearInterval(intervalId); intervalId = null;
+    clearInterval(intervalId); intervalId = null; startTimestamp = null;
     current = 0;
     state = state.map(s => ({
       ...s,
@@ -598,28 +614,25 @@
   // ── Tick ────────────────────────────────────────────────────────────────────
   function tick() {
     if (state[current].status !== 'running') return;
-    state[current].remaining--;
 
-    if (state[current].remaining <= 0) {
+    const real = getRealRemaining(current);
+    state[current].remaining = real;
+
+    if (real <= 0) {
       state[current].remaining = 0;
       state[current].status = 'done';
-      clearInterval(intervalId); intervalId = null;
+      clearInterval(intervalId); intervalId = null; startTimestamp = null;
       renderCards();
       showToast(`✓ ${state[current].name} finalizado`);
       playBeep();
-      // Auto-avanzar
       const next = current + 1;
       if (next < state.length) {
-        setTimeout(() => {
-          showToast(`▶ Iniciando ${state[next].name}...`);
-        }, 1500);
+        setTimeout(() => showToast(`▶ Iniciando ${state[next].name}...`), 1500);
       } else {
         setTimeout(() => showToast('🎉 ¡Clase completada!'), 1200);
       }
       return;
     }
-    updateMainDisplay();
-    // Actualizar solo el clock de la card activa
     updateActiveCard();
   }
 
