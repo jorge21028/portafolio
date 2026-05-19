@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Temporizador de Clase</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161a23;
+    --border: #252b38;
+    --text: #e8eaf0;
+    --muted: #5a6070;
+    --c1: #f4a12e;
+    --c2: #3ecfcf;
+    --c3: #e04a6e;
+    --radius: 16px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 40px;
+    gap: 28px;
+  }
+
+  /* ── Header ── */
+  header {
+    text-align: center;
+  }
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    letter-spacing: 0.12em;
+    color: var(--text);
+  }
+  header p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ── Cards ── */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    width: 100%;
+    max-width: 960px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 16px 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    transition: border-color .3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .4s ease;
+  }
+  .card.active::before { transform: scaleX(1); }
+  .card.active { border-color: var(--accent); }
+  .card.done { opacity: .45; }
+
+  .card[data-idx="0"] { --accent: var(--c1); }
+  .card[data-idx="1"] { --accent: var(--c2); }
+  .card[data-idx="2"] { --accent: var(--c3); }
+
+  .card-badge {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.95rem;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .card-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ── Nombre editable ── */
+  .card-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    letter-spacing: 0.08em;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--border);
+    text-align: center;
+    width: 100%;
+    outline: none;
+    padding: 2px 4px;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+  .card-name:focus { border-bottom-color: var(--accent); }
+
+  /* ── Input minutos ── */
+  .time-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .time-input-wrap label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+  .time-input {
+    width: 60px;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 5px 6px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .time-input:focus { border-color: var(--accent); }
+  .time-input:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── Reloj grande ── */
+  .clock {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.6rem, 8vw, 4.2rem);
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    line-height: 1;
+    transition: color .3s;
+  }
+  .clock.warning { animation: pulse-warn 1s ease-in-out infinite; }
+  @keyframes pulse-warn {
+    0%,100% { opacity: 1; }
+    50% { opacity: .45; }
+  }
+
+  /* ── Barra de progreso ── */
+  .progress-track {
+    width: 100%;
+    height: 5px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--accent);
+    transition: width .9s linear;
+    width: 0%;
+  }
+
+  /* ── Botones de control ── */
+  .btn-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .btn-start {
+    background: var(--accent);
+    color: #0d0f14;
+    border-color: var(--accent);
+  }
+  .btn-start:hover { filter: brightness(1.15); }
+  .btn-start:disabled { opacity: .35; cursor: not-allowed; filter: none; }
+
+  .btn-pause {
+    background: transparent;
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .btn-pause:hover { background: var(--accent); color: #0d0f14; }
+  .btn-pause:disabled { opacity: .35; cursor: not-allowed; }
+
+  .btn-reset {
+    background: transparent;
+    color: var(--muted);
+    border-color: var(--border);
+  }
+  .btn-reset:hover { color: var(--text); border-color: var(--muted); }
+
+  /* ── Panel central activo ── */
+  .main-display {
+    width: 100%;
+    max-width: 960px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+  }
+  .main-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+  }
+  .main-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(1.4rem, 4vw, 2rem);
+    letter-spacing: 0.1em;
+  }
+  .main-clock {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(5rem, 18vw, 9rem);
+    line-height: .95;
+    letter-spacing: 0.02em;
+  }
+  .main-progress {
+    width: 100%;
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .main-progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width .9s linear;
+    width: 0%;
+  }
+
+  /* ── Controles globales ── */
+  .global-controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn-lg {
+    padding: 12px 28px;
+    font-size: 0.9rem;
+    border-radius: 12px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .cards {
+      grid-template-columns: 1fr;
+    }
+    .card { padding: 16px; flex-direction: row; flex-wrap: wrap; gap: 10px; }
+    .card-badge { flex-shrink: 0; }
+    .card-name { width: auto; flex: 1; text-align: left; }
+    .clock { font-size: 2rem; }
+  }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px);
+    background: var(--text);
+    color: var(--bg);
+    padding: 10px 22px;
+    border-radius: 99px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    transition: opacity .3s, transform .3s;
+    pointer-events: none;
+    z-index: 99;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── Fin de tiempo overlay ── */
+  .done-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #0d0f14;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⏱ Temporizador de Clase</h1>
+  <p>3 momentos · control total</p>
+</header>
+
+<!-- Panel principal -->
+<div class="main-display" id="mainDisplay">
+  <span class="main-label" id="mainLabel">Configura y presiona Iniciar</span>
+  <span class="main-name" id="mainName" style="color: var(--c1)">— — —</span>
+  <div class="main-clock" id="mainClock" style="color: var(--c1)">00:00</div>
+  <div class="main-progress"><div class="main-progress-fill" id="mainFill" style="background: var(--c1)"></div></div>
+</div>
+
+<!-- Controles globales -->
+<div class="global-controls">
+  <button class="btn btn-lg btn-start" id="btnGlobalStart" onclick="globalStart()" style="background:var(--c1);border-color:var(--c1)">▶ Iniciar Momento 1</button>
+  <button class="btn btn-lg btn-pause" id="btnGlobalPause" onclick="globalPause()" style="color:var(--c1);border-color:var(--c1)" disabled>⏸ Pausar</button>
+  <button class="btn btn-lg btn-reset" onclick="globalReset()">↺ Reiniciar todo</button>
+</div>
+
+<!-- Cards de los 3 momentos -->
+<div class="cards" id="cardsContainer"></div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  // ── Estado ──────────────────────────────────────────────────────────────────
+  const COLORS = ['var(--c1)', 'var(--c2)', 'var(--c3)'];
+  const DEFAULTS = [
+    { name: 'Apertura', min: 10 },
+    { name: 'Desarrollo', min: 35 },
+    { name: 'Cierre', min: 5 },
+  ];
+
+  let state = DEFAULTS.map((d, i) => ({
+    idx: i,
+    name: d.name,
+    minutes: d.min,
+    totalSecs: d.min * 60,
+    remaining: d.min * 60,
+    status: 'idle', // idle | running | paused | done
+  }));
+
+  let current = 0;       // índice del momento activo
+  let intervalId = null;
+
+  // ── Render inicial ──────────────────────────────────────────────────────────
+  function renderCards() {
+    const container = document.getElementById('cardsContainer');
+    container.innerHTML = '';
+    state.forEach((s, i) => {
+      const card = document.createElement('div');
+      card.className = 'card' + (s.status === 'done' ? ' done' : '') + (i === current && s.status !== 'idle' && s.status !== 'done' ? ' active' : '');
+      card.dataset.idx = i;
+      card.style.setProperty('--accent', COLORS[i]);
+
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;width:100%">
+          <div class="card-badge">${i + 1}</div>
+          <input class="card-name" value="${s.name}" 
+            style="color:${s.status==='done'?'var(--muted)':COLORS[i]}"
+            onchange="updateName(${i}, this.value)"
+            title="Haz clic para editar el nombre">
+        </div>
+        <div class="time-input-wrap">
+          <label>Minutos</label>
+          <input class="time-input" type="number" min="1" max="180" value="${s.minutes}"
+            ${s.status !== 'idle' ? 'disabled' : ''}
+            onchange="updateMinutes(${i}, this.value)"
+            style="--accent:${COLORS[i]}">
+        </div>
+        <div class="clock ${s.remaining <= 60 && s.status === 'running' ? 'warning' : ''}" 
+             style="color:${COLORS[i]}">${formatTime(s.remaining)}</div>
+        <div class="progress-track">
+          <div class="progress-fill" style="background:${COLORS[i]};width:${progressPct(s)}%"></div>
+        </div>
+        <div class="btn-row">
+          ${cardButtons(s, i)}
+        </div>
+      `;
+      container.appendChild(card);
+    });
+    updateMainDisplay();
+    updateGlobalButtons();
+  }
+
+  function cardButtons(s, i) {
+    if (s.status === 'done') {
+      return `<span class="done-badge" style="--accent:${COLORS[i]}">✓ Completado</span>`;
+    }
+    const isActive = i === current;
+    const canStart = s.status === 'idle' || s.status === 'paused';
+    const canPause = s.status === 'running';
+
+    return `
+      <button class="btn btn-start" 
+        style="background:${COLORS[i]};border-color:${COLORS[i]}"
+        ${!canStart ? 'disabled' : ''}
+        onclick="startMoment(${i})">
+        ${s.status === 'paused' ? '▶ Reanudar' : '▶ Iniciar'}
+      </button>
+      <button class="btn btn-pause"
+        style="color:${COLORS[i]};border-color:${COLORS[i]}"
+        ${!canPause ? 'disabled' : ''}
+        onclick="pauseMoment(${i})">⏸</button>
+      <button class="btn btn-reset" onclick="resetMoment(${i})">↺</button>
+    `;
+  }
+
+  // ── Formato tiempo ──────────────────────────────────────────────────────────
+  function formatTime(secs) {
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+  function progressPct(s) {
+    if (s.totalSecs === 0) return 0;
+    return ((s.totalSecs - s.remaining) / s.totalSecs) * 100;
+  }
+
+  // ── Panel principal ─────────────────────────────────────────────────────────
+  function updateMainDisplay() {
+    const s = state[current];
+    const color = COLORS[current];
+    const label = document.getElementById('mainLabel');
+    const name  = document.getElementById('mainName');
+    const clock = document.getElementById('mainClock');
+    const fill  = document.getElementById('mainFill');
+
+    name.textContent = s.name;
+    name.style.color = color;
+    clock.textContent = formatTime(s.remaining);
+    clock.style.color = color;
+    fill.style.background = color;
+    fill.style.width = progressPct(s) + '%';
+
+    if (s.status === 'running') label.textContent = `⏱ Momento ${current + 1} en curso`;
+    else if (s.status === 'paused') label.textContent = `⏸ Momento ${current + 1} pausado`;
+    else if (s.status === 'done') label.textContent = `✓ Momento ${current + 1} completado`;
+    else label.textContent = `Momento ${current + 1} · listo para iniciar`;
+
+    if (s.remaining <= 60 && s.status === 'running') {
+      clock.style.animation = 'pulse-warn 1s ease-in-out infinite';
+    } else {
+      clock.style.animation = '';
+    }
+  }
+
+  function updateGlobalButtons() {
+    const s = state[current];
+    const btnStart = document.getElementById('btnGlobalStart');
+    const btnPause = document.getElementById('btnGlobalPause');
+    const color = COLORS[current];
+
+    btnStart.style.background = color;
+    btnStart.style.borderColor = color;
+    btnPause.style.color = color;
+    btnPause.style.borderColor = color;
+
+    const allDone = state.every(x => x.status === 'done');
+
+    if (allDone) {
+      btnStart.textContent = '✓ Clase completada';
+      btnStart.disabled = true;
+      btnPause.disabled = true;
+      return;
+    }
+
+    if (s.status === 'running') {
+      btnStart.textContent = `▶ Siguiente momento`;
+      const nextIdx = current + 1;
+      btnStart.disabled = nextIdx >= state.length;
+      btnPause.disabled = false;
+    } else if (s.status === 'paused') {
+      btnStart.textContent = `▶ Reanudar Momento ${current + 1}`;
+      btnStart.disabled = false;
+      btnPause.disabled = true;
+    } else if (s.status === 'idle') {
+      btnStart.textContent = `▶ Iniciar Momento ${current + 1}`;
+      btnStart.disabled = false;
+      btnPause.disabled = true;
+    } else if (s.status === 'done') {
+      const next = state.findIndex(x => x.status !== 'done');
+      if (next !== -1) {
+        btnStart.textContent = `▶ Iniciar Momento ${next + 1}`;
+        btnStart.disabled = false;
+      } else {
+        btnStart.disabled = true;
+      }
+      btnPause.disabled = true;
+    }
+  }
+
+  // ── Acciones ────────────────────────────────────────────────────────────────
+  function startMoment(i) {
+    if (intervalId) { clearInterval(intervalId); intervalId = null; }
+
+    // Pausar el momento actual si está corriendo
+    if (current !== i && state[current].status === 'running') {
+      state[current].status = 'paused';
+    }
+    current = i;
+
+    if (state[i].status === 'done') return;
+    state[i].status = 'running';
+
+    intervalId = setInterval(tick, 1000);
+    renderCards();
+    showToast(`▶ ${state[i].name} iniciado`);
+  }
+
+  function pauseMoment(i) {
+    if (state[i].status !== 'running') return;
+    clearInterval(intervalId); intervalId = null;
+    state[i].status = 'paused';
+    renderCards();
+    showToast(`⏸ ${state[i].name} pausado`);
+  }
+
+  function resetMoment(i) {
+    if (current === i && intervalId) { clearInterval(intervalId); intervalId = null; }
+    state[i].remaining = state[i].totalSecs;
+    state[i].status = 'idle';
+    renderCards();
+  }
+
+  function globalStart() {
+    const s = state[current];
+    if (s.status === 'running') {
+      // Avanzar al siguiente
+      const next = current + 1;
+      if (next < state.length) {
+        clearInterval(intervalId); intervalId = null;
+        state[current].status = 'done';
+        state[current].remaining = 0;
+        startMoment(next);
+      }
+    } else if (s.status === 'paused' || s.status === 'idle') {
+      startMoment(current);
+    } else if (s.status === 'done') {
+      const next = state.findIndex(x => x.status !== 'done');
+      if (next !== -1) startMoment(next);
+    }
+  }
+
+  function globalPause() {
+    pauseMoment(current);
+  }
+
+  function globalReset() {
+    clearInterval(intervalId); intervalId = null;
+    current = 0;
+    state = state.map(s => ({
+      ...s,
+      remaining: s.totalSecs,
+      status: 'idle',
+    }));
+    renderCards();
+    showToast('↺ Temporizador reiniciado');
+  }
+
+  // ── Tick ────────────────────────────────────────────────────────────────────
+  function tick() {
+    if (state[current].status !== 'running') return;
+    state[current].remaining--;
+
+    if (state[current].remaining <= 0) {
+      state[current].remaining = 0;
+      state[current].status = 'done';
+      clearInterval(intervalId); intervalId = null;
+      renderCards();
+      showToast(`✓ ${state[current].name} finalizado`);
+      playBeep();
+      // Auto-avanzar
+      const next = current + 1;
+      if (next < state.length) {
+        setTimeout(() => {
+          showToast(`▶ Iniciando ${state[next].name}...`);
+        }, 1500);
+      } else {
+        setTimeout(() => showToast('🎉 ¡Clase completada!'), 1200);
+      }
+      return;
+    }
+    updateMainDisplay();
+    // Actualizar solo el clock de la card activa
+    updateActiveCard();
+  }
+
+  function updateActiveCard() {
+    const card = document.querySelector(`.card[data-idx="${current}"]`);
+    if (!card) return;
+    const clock = card.querySelector('.clock');
+    const fill = card.querySelector('.progress-fill');
+    const s = state[current];
+    if (clock) {
+      clock.textContent = formatTime(s.remaining);
+      if (s.remaining <= 60) clock.classList.add('warning');
+      else clock.classList.remove('warning');
+    }
+    if (fill) fill.style.width = progressPct(s) + '%';
+    updateMainDisplay();
+  }
+
+  // ── Edición en vivo ─────────────────────────────────────────────────────────
+  function updateName(i, val) {
+    state[i].name = val.trim() || `Momento ${i + 1}`;
+    updateGlobalButtons();
+    updateMainDisplay();
+  }
+
+  function updateMinutes(i, val) {
+    const m = Math.max(1, Math.min(180, parseInt(val) || 1));
+    state[i].minutes = m;
+    state[i].totalSecs = m * 60;
+    state[i].remaining = m * 60;
+    renderCards();
+  }
+
+  // ── Sonido de fin ───────────────────────────────────────────────────────────
+  function playBeep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, 200, 400].forEach(delay => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0, ctx.currentTime + delay / 1000);
+        gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + delay / 1000 + 0.05);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + delay / 1000 + 0.35);
+        osc.start(ctx.currentTime + delay / 1000);
+        osc.stop(ctx.currentTime + delay / 1000 + 0.4);
+      });
+    } catch (e) {}
+  }
+
+  // ── Toast ───────────────────────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // ── Init ────────────────────────────────────────────────────────────────────
+  renderCards();
+</script>
+</body>
+</html>
